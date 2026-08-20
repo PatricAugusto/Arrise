@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Arrise — Design Tokens
+  Direção: "ascensão" — cada hábito concluído é um passo subindo.
+  Paleta fria e futurista (violeta -> ciano "aurora") com um único
+  contraponto quente (coral) reservado para o indicador de streak/fogo.
+*/
+
+:root {
+  /* Light theme */
+  --arrise-bg: 245 247 250;           /* #F5F7FA */
+  --arrise-bg-elevated: 255 255 255;  /* #FFFFFF */
+  --arrise-text: 18 20 28;            /* #12141C */
+  --arrise-text-dim: 100 106 122;     /* #646A7A */
+  --arrise-glass: 255 255 255;
+  --arrise-glass-border: 18 20 28;
+}
+
+.dark:root {
+  /* Dark theme */
+  --arrise-bg: 10 14 23;              /* #0A0E17 */
+  --arrise-bg-elevated: 17 22 34;     /* #111622 */
+  --arrise-text: 237 239 245;         /* #EDEFF5 */
+  --arrise-text-dim: 143 150 168;     /* #8F96A8 */
+  --arrise-glass: 255 255 255;
+  --arrise-glass-border: 255 255 255;
+}
