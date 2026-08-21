@@ -1,16 +1,13 @@
 import { useCallback, useState } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlassCard } from '@/components/GlassCard';
 import { ProgressRing } from '@/components/ProgressRing';
-import { mockHabits } from '@/lib/mock-habits';
 import { HabitColor } from '@/lib/types';
 import { Habit } from '@/lib/types';
-
-const HABITS_STORAGE_KEY = '@arrise/habits';
+import { getHabits } from '@/lib/api';
 
 const RING_COLOR: Record<HabitColor, string> = {
   violet: '#A8B8BB',
@@ -19,19 +16,17 @@ const RING_COLOR: Record<HabitColor, string> = {
 };
 
 export default function ProgressScreen() {
-  const [habits, setHabits] = useState<Habit[]>(mockHabits);
+  const [habits, setHabits] = useState<Habit[]>([]);
+  const [apiError, setApiError] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
-      AsyncStorage.getItem(HABITS_STORAGE_KEY).then((stored) => {
-        if (!stored) return;
-        try {
-          const savedHabits = JSON.parse(stored) as Habit[];
-          if (Array.isArray(savedHabits)) setHabits(savedHabits);
-        } catch {
-          // Mantém os dados iniciais se o armazenamento estiver inválido.
-        }
-      });
+      getHabits()
+        .then((savedHabits) => {
+          setHabits(savedHabits);
+          setApiError(false);
+        })
+        .catch(() => setApiError(true));
     }, []),
   );
 
@@ -92,7 +87,7 @@ export default function ProgressScreen() {
 
         {habits.length === 0 && (
           <Text className="mt-8 text-center font-body text-sm text-text-dim">
-            Adicione um hábito para começar a acompanhar seus sinais.
+            {apiError ? 'Não foi possível carregar os dados do servidor.' : 'Adicione um hábito para começar a acompanhar seus sinais.'}
           </Text>
         )}
       </ScrollView>

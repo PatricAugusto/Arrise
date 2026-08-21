@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1",
+    "title": "Beber 2L de água",
+    "icon": "water-outline",
+    "color": "aurora",
+    "streak": 12,
+    "completedToday": true,
+    "weekProgress": 0.86
+  },
+  {
+    "id": "2",
+    "title": "Meditar 10 minutos",
+    "icon": "sparkles-outline",
+    "color": "violet",
+    "streak": 5,
+    "completedToday": true,
+    "weekProgress": 0.57
+  },
+  {
+    "id": "4",
+    "title": "Treinar",
+    "icon": "barbell-outline",
+    "color": "ember",
+    "streak": 3,
+    "completedToday": true,
+    "weekProgress": 0.43
+  },
+  {
+    "id": "5c4d0cff-2af9-4796-a9a0-5f8d0a398636",
+    "title": "Aoaoaoaoaoao",
+    "icon": "moon-outline",
+    "color": "ember",
+    "streak": 0,
+    "completedToday": true,
+    "weekProgress": 0
+  }
+]

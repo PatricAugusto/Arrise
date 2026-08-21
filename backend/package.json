@@ -1,0 +1,10 @@
+{
+  "name": "arrise-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "API de persistencia do Arrise",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  }
+}

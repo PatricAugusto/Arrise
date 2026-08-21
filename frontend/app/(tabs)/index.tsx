@@ -1,52 +1,62 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { View, Text, FlatList, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/lib/theme";
-import { mockHabits } from "@/lib/mock-habits";
 import { Habit } from "@/lib/types";
 import { HabitCard } from "@/components/HabitCard";
 import { ProgressRing } from "@/components/ProgressRing";
 import { HabitFormModal } from "@/components/HabitFormModal";
-
-const HABITS_STORAGE_KEY = "@arrise/habits";
+import { createHabit, deleteHabit, getHabits, updateHabit } from "@/lib/api";
 
 export default function TodayScreen() {
   const { theme, toggleAt } = useTheme();
-  const [habits, setHabits] = useState<Habit[]>(mockHabits);
-  const [isHydrated, setIsHydrated] = useState(false);
+  const [habits, setHabits] = useState<Habit[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [apiError, setApiError] = useState<string | null>(null);
   const [formVisible, setFormVisible] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
 
-  useEffect(() => {
-    AsyncStorage.getItem(HABITS_STORAGE_KEY).then((stored) => {
-      if (stored) {
-        try {
-          const savedHabits = JSON.parse(stored) as Habit[];
-          if (Array.isArray(savedHabits)) setHabits(savedHabits);
-        } catch {
-          // Mantém os hábitos iniciais se o armazenamento estiver inválido.
-        }
-      }
-      setIsHydrated(true);
-    });
+  const loadHabits = useCallback(async () => {
+    setIsLoading(true);
+    setApiError(null);
+    try {
+      setHabits(await getHabits());
+    } catch (error) {
+      setApiError(error instanceof Error ? error.message : "Não foi possível conectar ao servidor.");
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useEffect(() => {
-    if (isHydrated) AsyncStorage.setItem(HABITS_STORAGE_KEY, JSON.stringify(habits));
-  }, [habits, isHydrated]);
+    loadHabits();
+  }, [loadHabits]);
 
-  const handleToggle = (id: string) => {
-    setHabits((prev) =>
-      prev.map((h) =>
-        h.id === id ? { ...h, completedToday: !h.completedToday } : h,
-      ),
-    );
+  const handleToggle = async (id: string) => {
+    const habit = habits.find((item) => item.id === id);
+    if (!habit) return;
+    try {
+      const updatedHabit = await updateHabit(id, { completedToday: !habit.completedToday });
+      setHabits((prev) => prev.map((item) => (item.id === id ? updatedHabit : item)));
+    } catch {
+      setApiError("Não foi possível atualizar este hábito.");
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setHabits((prev) => prev.filter((h) => h.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteHabit(id);
+      setHabits((prev) => prev.filter((habit) => habit.id !== id));
+    } catch {
+      setApiError("Não foi possível excluir este hábito.");
+    }
+  };
+
+  const handleDeleteHabit = (habit: Habit) => {
+    void handleDelete(habit.id);
+    setFormVisible(false);
+    setEditingHabit(null);
   };
 
   const openCreateForm = () => {
@@ -59,24 +69,20 @@ export default function TodayScreen() {
     setFormVisible(true);
   };
 
-  const handleSaveHabit = (data: Pick<Habit, "title" | "icon" | "color">) => {
-    setHabits((prev) => {
+  const handleSaveHabit = async (data: Pick<Habit, "title" | "icon" | "color">) => {
+    try {
       if (editingHabit) {
-        return prev.map((habit) => (habit.id === editingHabit.id ? { ...habit, ...data } : habit));
+        const updatedHabit = await updateHabit(editingHabit.id, data);
+        setHabits((prev) => prev.map((habit) => (habit.id === editingHabit.id ? updatedHabit : habit)));
+      } else {
+        const newHabit = await createHabit(data);
+        setHabits((prev) => [...prev, newHabit]);
       }
-      return [
-        ...prev,
-        {
-          ...data,
-          id: `${Date.now()}`,
-          streak: 0,
-          completedToday: false,
-          weekProgress: 0,
-        },
-      ];
-    });
-    setFormVisible(false);
-    setEditingHabit(null);
+      setFormVisible(false);
+      setEditingHabit(null);
+    } catch {
+      setApiError("Não foi possível salvar este hábito.");
+    }
   };
 
   const completedCount = useMemo(
@@ -146,10 +152,16 @@ export default function TodayScreen() {
           />
         )}
         ListEmptyComponent={
-          <Text className="text-text-dim font-body text-center mt-10">
-            Nenhum hábito por aqui. Bom trabalho, ou hora de adicionar um novo
-            👀
-          </Text>
+          <View className="items-center mt-10">
+            <Text className="text-text-dim font-body text-center">
+              {isLoading ? "Sincronizando hábitos..." : apiError ?? "Nenhum hábito por aqui. Adicione um novo sinal."}
+            </Text>
+            {!!apiError && !isLoading && (
+              <Pressable onPress={loadHabits} className="mt-4 rounded-xl border border-aurora-500/30 px-4 py-2">
+                <Text className="text-aurora-500 font-body-medium text-xs">Tentar novamente</Text>
+              </Pressable>
+            )}
+          </View>
         }
       />
 
@@ -166,6 +178,7 @@ export default function TodayScreen() {
         habit={editingHabit}
         onClose={() => setFormVisible(false)}
         onSave={handleSaveHabit}
+        onDelete={handleDeleteHabit}
       />
     </SafeAreaView>
   );

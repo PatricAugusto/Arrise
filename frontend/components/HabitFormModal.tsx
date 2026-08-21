@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Habit, HabitColor } from '@/lib/types';
 
@@ -8,6 +8,7 @@ interface HabitFormModalProps {
   habit?: Habit | null;
   onClose: () => void;
   onSave: (data: Pick<Habit, 'title' | 'icon' | 'color'>) => void;
+  onDelete: (habit: Habit) => void;
 }
 
 const COLORS: Array<{ value: HabitColor; label: string; hex: string }> = [
@@ -18,7 +19,7 @@ const COLORS: Array<{ value: HabitColor; label: string; hex: string }> = [
 
 const ICONS = ['sparkles-outline', 'water-outline', 'book-outline', 'barbell-outline', 'leaf-outline', 'moon-outline'];
 
-export function HabitFormModal({ visible, habit, onClose, onSave }: HabitFormModalProps) {
+export function HabitFormModal({ visible, habit, onClose, onSave, onDelete }: HabitFormModalProps) {
   const [title, setTitle] = useState('');
   const [color, setColor] = useState<HabitColor>('aurora');
   const [icon, setIcon] = useState(ICONS[0]);
@@ -34,6 +35,18 @@ export function HabitFormModal({ visible, habit, onClose, onSave }: HabitFormMod
     const normalizedTitle = title.trim();
     if (!normalizedTitle) return;
     onSave({ title: normalizedTitle, icon, color });
+  };
+
+  const handleDelete = () => {
+    if (!habit) return;
+    Alert.alert('Excluir hábito?', `"${habit.title}" será removido da sua rotina.`, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Excluir',
+        style: 'destructive',
+        onPress: () => onDelete(habit),
+      },
+    ]);
   };
 
   return (
@@ -101,6 +114,13 @@ export function HabitFormModal({ visible, habit, onClose, onSave }: HabitFormMod
                 {habit ? 'Salvar alterações' : 'Adicionar hábito'}
               </Text>
             </Pressable>
+
+            {habit && (
+              <Pressable onPress={handleDelete} className="mt-3 flex-row items-center justify-center py-3" accessibilityLabel="Excluir hábito">
+                <Ionicons name="trash-outline" size={16} color="#FF8A5B" />
+                <Text className="ml-2 font-body-medium text-xs text-ember-500">Excluir hábito</Text>
+              </Pressable>
+            )}
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
