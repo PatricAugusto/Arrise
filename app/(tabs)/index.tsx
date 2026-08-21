@@ -1,16 +1,41 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { View, Text, FlatList, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/lib/theme";
 import { mockHabits } from "@/lib/mock-habits";
 import { Habit } from "@/lib/types";
 import { HabitCard } from "@/components/HabitCard";
 import { ProgressRing } from "@/components/ProgressRing";
+import { HabitFormModal } from "@/components/HabitFormModal";
+
+const HABITS_STORAGE_KEY = "@arrise/habits";
 
 export default function TodayScreen() {
   const { theme, toggleAt } = useTheme();
   const [habits, setHabits] = useState<Habit[]>(mockHabits);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [formVisible, setFormVisible] = useState(false);
+  const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
+
+  useEffect(() => {
+    AsyncStorage.getItem(HABITS_STORAGE_KEY).then((stored) => {
+      if (stored) {
+        try {
+          const savedHabits = JSON.parse(stored) as Habit[];
+          if (Array.isArray(savedHabits)) setHabits(savedHabits);
+        } catch {
+          // Mantém os hábitos iniciais se o armazenamento estiver inválido.
+        }
+      }
+      setIsHydrated(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isHydrated) AsyncStorage.setItem(HABITS_STORAGE_KEY, JSON.stringify(habits));
+  }, [habits, isHydrated]);
 
   const handleToggle = (id: string) => {
     setHabits((prev) =>
@@ -22,6 +47,36 @@ export default function TodayScreen() {
 
   const handleDelete = (id: string) => {
     setHabits((prev) => prev.filter((h) => h.id !== id));
+  };
+
+  const openCreateForm = () => {
+    setEditingHabit(null);
+    setFormVisible(true);
+  };
+
+  const openEditForm = (habit: Habit) => {
+    setEditingHabit(habit);
+    setFormVisible(true);
+  };
+
+  const handleSaveHabit = (data: Pick<Habit, "title" | "icon" | "color">) => {
+    setHabits((prev) => {
+      if (editingHabit) {
+        return prev.map((habit) => (habit.id === editingHabit.id ? { ...habit, ...data } : habit));
+      }
+      return [
+        ...prev,
+        {
+          ...data,
+          id: `${Date.now()}`,
+          streak: 0,
+          completedToday: false,
+          weekProgress: 0,
+        },
+      ];
+    });
+    setFormVisible(false);
+    setEditingHabit(null);
   };
 
   const completedCount = useMemo(
@@ -68,7 +123,10 @@ export default function TodayScreen() {
 
       <View className="px-5 flex-row items-center justify-between mb-2">
         <Text className="text-text font-body-semibold text-sm">Próximos sinais</Text>
-        <Text className="text-text-dim font-mono text-[10px]">{String(habits.length).padStart(2, "0")} TRACKED</Text>
+        <Pressable onPress={openCreateForm} className="flex-row items-center" accessibilityLabel="Adicionar hábito">
+          <Ionicons name="add" size={16} color="#3CEFD8" />
+          <Text className="ml-1 text-aurora-500 font-body-medium text-xs">Novo</Text>
+        </Pressable>
       </View>
 
       <FlatList
@@ -84,6 +142,7 @@ export default function TodayScreen() {
             habit={item}
             onToggle={handleToggle}
             onDelete={handleDelete}
+            onEdit={openEditForm}
           />
         )}
         ListEmptyComponent={
@@ -92,6 +151,21 @@ export default function TodayScreen() {
             👀
           </Text>
         }
+      />
+
+      <Pressable
+        onPress={openCreateForm}
+        className="absolute bottom-24 right-5 h-14 w-14 items-center justify-center rounded-full bg-aurora-500 shadow-lg"
+        accessibilityLabel="Adicionar hábito"
+      >
+        <Ionicons name="add" size={27} color="#071318" />
+      </Pressable>
+
+      <HabitFormModal
+        visible={formVisible}
+        habit={editingHabit}
+        onClose={() => setFormVisible(false)}
+        onSave={handleSaveHabit}
       />
     </SafeAreaView>
   );

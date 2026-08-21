@@ -1,10 +1,16 @@
+import { useCallback, useState } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlassCard } from '@/components/GlassCard';
 import { ProgressRing } from '@/components/ProgressRing';
 import { mockHabits } from '@/lib/mock-habits';
 import { HabitColor } from '@/lib/types';
+import { Habit } from '@/lib/types';
+
+const HABITS_STORAGE_KEY = '@arrise/habits';
 
 const RING_COLOR: Record<HabitColor, string> = {
   violet: '#A8B8BB',
@@ -13,8 +19,24 @@ const RING_COLOR: Record<HabitColor, string> = {
 };
 
 export default function ProgressScreen() {
-  const totalStreak = mockHabits.reduce((sum, h) => sum + h.streak, 0);
-  const bestStreak = Math.max(...mockHabits.map((h) => h.streak));
+  const [habits, setHabits] = useState<Habit[]>(mockHabits);
+
+  useFocusEffect(
+    useCallback(() => {
+      AsyncStorage.getItem(HABITS_STORAGE_KEY).then((stored) => {
+        if (!stored) return;
+        try {
+          const savedHabits = JSON.parse(stored) as Habit[];
+          if (Array.isArray(savedHabits)) setHabits(savedHabits);
+        } catch {
+          // Mantém os dados iniciais se o armazenamento estiver inválido.
+        }
+      });
+    }, []),
+  );
+
+  const totalStreak = habits.reduce((sum, h) => sum + h.streak, 0);
+  const bestStreak = habits.length ? Math.max(...habits.map((h) => h.streak)) : 0;
 
   return (
     <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
@@ -47,7 +69,7 @@ export default function ProgressScreen() {
 
         <Text className="text-text font-body-semibold text-sm mb-3">Progresso semanal</Text>
 
-        {mockHabits.map((habit) => (
+        {habits.map((habit) => (
           <GlassCard key={habit.id} className="flex-row items-center p-4 mb-3">
             <ProgressRing
               progress={habit.weekProgress}
@@ -67,6 +89,12 @@ export default function ProgressScreen() {
             </View>
           </GlassCard>
         ))}
+
+        {habits.length === 0 && (
+          <Text className="mt-8 text-center font-body text-sm text-text-dim">
+            Adicione um hábito para começar a acompanhar seus sinais.
+          </Text>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

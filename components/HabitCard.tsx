@@ -19,6 +19,7 @@ interface HabitCardProps {
   habit: Habit;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
+  onEdit: (habit: Habit) => void;
 }
 
 const COLOR_STYLES: Record<HabitColor, { iconBg: string; iconColor: string; ring: string; dot: string }> = {
@@ -30,7 +31,7 @@ const COLOR_STYLES: Record<HabitColor, { iconBg: string; iconColor: string; ring
 const SWIPE_THRESHOLD = 88;
 const MAX_SWIPE = 120;
 
-export function HabitCard({ habit, onToggle, onDelete }: HabitCardProps) {
+export function HabitCard({ habit, onToggle, onDelete, onEdit }: HabitCardProps) {
   const colors = COLOR_STYLES[habit.color];
 
   const translateX = useSharedValue(0);
@@ -116,6 +117,9 @@ export function HabitCard({ habit, onToggle, onDelete }: HabitCardProps) {
               >
                 {habit.completedToday && <View className={`w-3.5 h-3.5 rounded-full ${colors.dot}`} />}
               </Animated.View>
+              <Pressable onPress={() => onEdit(habit)} hitSlop={10} className="ml-3" accessibilityLabel={`Editar ${habit.title}`}>
+                <Ionicons name="ellipsis-horizontal" size={20} color="#8B9EA3" />
+              </Pressable>
             </Pressable>
           </GlassCard>
         </Animated.View>
