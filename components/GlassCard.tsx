@@ -14,7 +14,7 @@ export function GlassCard({ intensity = 30, className = '', style, children, ...
   if (Platform.OS === 'android') {
     return (
       <View
-        className={`rounded-glass overflow-hidden border border-glass-border/10 dark:border-glass-border/[0.08] bg-bg-elevated/80 dark:bg-bg-elevated/70 ${className}`}
+        className={`rounded-glass overflow-hidden border border-glass-border/10 dark:border-glass-border/[0.1] bg-bg-elevated/80 dark:bg-bg-elevated/70 ${className}`}
         style={style}
         {...rest}
       >
@@ -25,10 +25,10 @@ export function GlassCard({ intensity = 30, className = '', style, children, ...
 
   return (
     <View className={`rounded-glass overflow-hidden ${className}`} style={style} {...rest}>
-      <BlurView
+        <BlurView
         intensity={intensity}
         tint={isDark ? 'dark' : 'light'}
-        className="border border-glass-border/10 dark:border-glass-border/[0.08] bg-glass/40 dark:bg-glass/[0.04]"
+        className="border border-glass-border/10 dark:border-glass-border/[0.1] bg-glass/40 dark:bg-glass/[0.04]"
       >
         {children}
       </BlurView>

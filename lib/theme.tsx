@@ -16,8 +16,8 @@ interface ThemeContextValue {
 }
 
 const THEME_STORAGE_KEY = '@arrise/theme-mode';
-const BG_DARK = '#0A0E17';
-const BG_LIGHT = '#F5F7FA';
+const BG_DARK = '#070D12';
+const BG_LIGHT = '#F1F4F6';
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
