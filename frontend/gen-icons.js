@@ -6,19 +6,16 @@ async function render(input, output, size) {
 }
 
 (async () => {
-  // Ícone principal (full bleed, com fundo)
-  await render('design/icon-full.svg', 'assets/icon.png', 1024);
-  // Favicon (web)
-  await render('design/icon-full.svg', 'assets/favicon.png', 196);
-  // Android adaptive icon
-  await render('design/icon-foreground.svg', 'assets/android-icon-foreground.png', 1024);
-  await render('design/icon-monochrome.svg', 'assets/android-icon-monochrome.png', 1024);
-  // Splash (fundo já é sólido via app.json, ícone precisa ser transparente)
-  await render('design/icon-foreground.svg', 'assets/splash-icon.png', 1024);
+  // Shared cyberpunk mark used by every platform asset.
+  await render('assets/arrise-mark.svg', 'assets/icon.png', 1024);
+  await render('assets/arrise-mark.svg', 'assets/favicon.png', 196);
+  await render('assets/arrise-foreground.svg', 'assets/android-icon-foreground.png', 1024);
+  await render('assets/arrise-monochrome.svg', 'assets/android-icon-monochrome.png', 1024);
+  await render('assets/arrise-foreground.svg', 'assets/splash-icon.png', 1024);
 
   // Background adaptativo: cor sólida lisa
   await sharp({
-    create: { width: 1024, height: 1024, channels: 4, background: '#0A0E17' }
+    create: { width: 1024, height: 1024, channels: 4, background: '#06080C' }
   }).png().toFile('assets/android-icon-background.png');
   console.log('ok assets/android-icon-background.png');
 })();
