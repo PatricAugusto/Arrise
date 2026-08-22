@@ -1,0 +1,14 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" rx="224" fill="#06080C"/>
+  <path d="M512 142L242 804H346L405 652H619L678 804H782L512 142Z" fill="#F5F8FA"/>
+  <path d="M512 350L447 538H577L512 350Z" fill="#06080C"/>
+  <path d="M405 652H619" stroke="#00E5FF" stroke-width="18"/>
+  <path d="M404 652L356 774M620 652L668 774" stroke="#00E5FF" stroke-width="8" stroke-linecap="square"/>
+  <path d="M276 804H346M678 804H748" stroke="#FF2BD6" stroke-width="12" stroke-linecap="square"/>
+  <circle cx="346" cy="804" r="14" fill="#D7FF3F"/>
+  <circle cx="678" cy="804" r="14" fill="#D7FF3F"/>
+  <path d="M178 238H238M786 238H846M166 286H218M806 286H858" stroke="#00E5FF" stroke-width="6" stroke-linecap="square" opacity="0.8"/>
+  <path d="M178 738H224M800 738H846" stroke="#FF2BD6" stroke-width="6" stroke-linecap="square" opacity="0.8"/>
+  <text x="172" y="192" fill="#8793A1" font-family="monospace" font-size="22" letter-spacing="6">ARRISE // 01</text>
+  <text x="706" y="858" fill="#8793A1" font-family="monospace" font-size="18" letter-spacing="3">0101</text>
+</svg>
