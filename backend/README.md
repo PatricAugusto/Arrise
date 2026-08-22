@@ -20,7 +20,9 @@ O backend usa exclusivamente a porta `3000`. Se ela já estiver ocupada, encerre
 - `PATCH /api/habits/:id`
 - `DELETE /api/habits/:id`
 
-Os dados ficam em `backend/data/habits.json`. A URL consumida pelo Expo pode ser configurada em `.env`:
+Os dados são persistidos em SQLite em `backend/data/arrise.sqlite`. Na primeira execução, os arquivos legados `backend/data/users.json` e `backend/data/habits.json` são migrados automaticamente. O banco usa transações, chaves estrangeiras, constraints e índice por usuário.
+
+A URL consumida pelo Expo pode ser configurada em `.env`:
 
 ```bash
 EXPO_PUBLIC_API_URL=http://localhost:3000/api

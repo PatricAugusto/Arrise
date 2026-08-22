@@ -1,49 +1,72 @@
 const http = require('node:http');
 const { randomUUID, randomBytes, scryptSync, timingSafeEqual } = require('node:crypto');
-const { mkdir, readFile, rename, writeFile } = require('node:fs/promises');
+const Database = require('better-sqlite3');
+const { mkdir, readFile } = require('node:fs/promises');
 const path = require('node:path');
 
 const PORT = 3000;
 const DATA_FILE = path.join(__dirname, 'data', 'habits.json');
 const USERS_FILE = path.join(__dirname, 'data', 'users.json');
+const DATABASE_FILE = path.join(__dirname, 'data', 'arrise.sqlite');
 const ALLOWED_COLORS = new Set(['violet', 'aurora', 'ember']);
 const MAX_BODY_SIZE = 1024 * 16;
 
-async function ensureDataFile() {
+async function ensureDatabase() {
   await mkdir(path.dirname(DATA_FILE), { recursive: true });
-  try {
-    await readFile(DATA_FILE, 'utf8');
-  } catch (error) {
-    if (error.code !== 'ENOENT') throw error;
-    await writeFile(DATA_FILE, '[]', 'utf8');
+  const database = new Database(DATABASE_FILE);
+  database.pragma('journal_mode = WAL');
+  database.pragma('foreign_keys = ON');
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+      password_hash TEXT NOT NULL,
+      session_token TEXT UNIQUE,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS habits (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      title TEXT NOT NULL CHECK(length(title) BETWEEN 1 AND 48),
+      icon TEXT NOT NULL,
+      color TEXT NOT NULL CHECK(color IN ('violet', 'aurora', 'ember')),
+      streak INTEGER NOT NULL DEFAULT 0 CHECK(streak >= 0),
+      completed_today INTEGER NOT NULL DEFAULT 0 CHECK(completed_today IN (0, 1)),
+      week_progress REAL NOT NULL DEFAULT 0 CHECK(week_progress BETWEEN 0 AND 1),
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS habits_user_id_idx ON habits(user_id);
+  `);
+
+  const userCount = database.prepare('SELECT COUNT(*) AS count FROM users').get().count;
+  if (userCount === 0) {
+    try {
+      const users = JSON.parse(await readFile(USERS_FILE, 'utf8'));
+      const insertUser = database.prepare('INSERT OR IGNORE INTO users (id, name, email, password_hash, session_token) VALUES (?, ?, ?, ?, ?)');
+      const migrateUsers = database.transaction((items) => items.forEach((user) => insertUser.run(user.id, user.name, user.email, user.passwordHash, user.sessionToken || null)));
+      migrateUsers(Array.isArray(users) ? users : []);
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
   }
-  try {
-    await readFile(USERS_FILE, 'utf8');
-  } catch (error) {
-    if (error.code !== 'ENOENT') throw error;
-    await writeFile(USERS_FILE, '[]', 'utf8');
+
+  const habitCount = database.prepare('SELECT COUNT(*) AS count FROM habits').get().count;
+  if (habitCount === 0) {
+    try {
+      const habits = JSON.parse(await readFile(DATA_FILE, 'utf8'));
+      const firstUser = database.prepare('SELECT id FROM users ORDER BY created_at, id LIMIT 1').get();
+      const insertHabit = database.prepare('INSERT OR IGNORE INTO habits (id, user_id, title, icon, color, streak, completed_today, week_progress) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+      const migrateHabits = database.transaction((items) => items.forEach((habit) => {
+        const userId = habit.userId || firstUser?.id;
+        if (userId) insertHabit.run(habit.id, userId, habit.title, habit.icon, habit.color, habit.streak || 0, habit.completedToday ? 1 : 0, habit.weekProgress || 0);
+      }));
+      migrateHabits(Array.isArray(habits) ? habits : []);
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
   }
-}
-
-async function readHabits() {
-  const content = await readFile(DATA_FILE, 'utf8');
-  return JSON.parse(content);
-}
-
-async function writeHabits(habits) {
-  const temporaryFile = `${DATA_FILE}.tmp`;
-  await writeFile(temporaryFile, JSON.stringify(habits, null, 2), 'utf8');
-  await rename(temporaryFile, DATA_FILE);
-}
-
-async function readUsers() {
-  return JSON.parse(await readFile(USERS_FILE, 'utf8'));
-}
-
-async function writeUsers(users) {
-  const temporaryFile = `${USERS_FILE}.tmp`;
-  await writeFile(temporaryFile, JSON.stringify(users, null, 2), 'utf8');
-  await rename(temporaryFile, USERS_FILE);
+  return database;
 }
 
 function hashPassword(password, salt = randomBytes(16).toString('hex')) {
@@ -60,9 +83,14 @@ function publicUser(user) {
   return { id: user.id, name: user.name, email: user.email };
 }
 
-function getAuthUser(request, users) {
+function getAuthUser(request, database) {
   const token = request.headers.authorization?.replace(/^Bearer\s+/i, '');
-  return users.find((user) => user.sessionToken === token) || null;
+  if (!token) return null;
+  return database.prepare('SELECT id, name, email FROM users WHERE session_token = ?').get(token) || null;
+}
+
+function habitFromRow(row) {
+  return { id: row.id, title: row.title, icon: row.icon, color: row.color, streak: row.streak, completedToday: Boolean(row.completed_today), weekProgress: row.week_progress };
 }
 
 function sendJson(response, status, payload) {
@@ -112,7 +140,7 @@ function validateHabitInput(input, partial = false) {
   return null;
 }
 
-async function handleRequest(request, response) {
+async function handleRequest(request, response, database) {
   if (request.method === 'OPTIONS') {
     sendJson(response, 204);
     return;
@@ -126,7 +154,6 @@ async function handleRequest(request, response) {
     return;
   }
 
-  const users = await readUsers();
   if (request.method === 'POST' && url.pathname === '/api/auth/register') {
     const input = await readBody(request);
     const name = typeof input.name === 'string' ? input.name.trim() : '';
@@ -136,13 +163,13 @@ async function handleRequest(request, response) {
       sendError(response, 400, 'Nome, e-mail e senha com no mínimo 8 caracteres são obrigatórios.');
       return;
     }
-    if (users.some((user) => user.email === email)) {
-      sendError(response, 409, 'Já existe uma conta com este e-mail.');
-      return;
-    }
     const user = { id: randomUUID(), name, email, passwordHash: hashPassword(password), sessionToken: randomBytes(32).toString('hex') };
-    users.push(user);
-    await writeUsers(users);
+    try {
+      database.prepare('INSERT INTO users (id, name, email, password_hash, session_token) VALUES (?, ?, ?, ?, ?)').run(user.id, user.name, user.email, user.passwordHash, user.sessionToken);
+    } catch (error) {
+      if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') return sendError(response, 409, 'Já existe uma conta com este e-mail.');
+      throw error;
+    }
     sendJson(response, 201, { token: user.sessionToken, user: publicUser(user) });
     return;
   }
@@ -151,14 +178,14 @@ async function handleRequest(request, response) {
     const input = await readBody(request);
     const email = typeof input.email === 'string' ? input.email.trim().toLowerCase() : '';
     const password = typeof input.password === 'string' ? input.password : '';
-    const user = users.find((item) => item.email === email);
-    if (!user || !passwordMatches(password, user.passwordHash)) {
+    const user = database.prepare('SELECT id, name, email, password_hash FROM users WHERE email = ?').get(email);
+    if (!user || !passwordMatches(password, user.password_hash)) {
       sendError(response, 401, 'E-mail ou senha inválidos.');
       return;
     }
-    user.sessionToken = randomBytes(32).toString('hex');
-    await writeUsers(users);
-    sendJson(response, 200, { token: user.sessionToken, user: publicUser(user) });
+    const sessionToken = randomBytes(32).toString('hex');
+    database.prepare('UPDATE users SET session_token = ? WHERE id = ?').run(sessionToken, user.id);
+    sendJson(response, 200, { token: sessionToken, user: publicUser(user) });
     return;
   }
 
@@ -173,7 +200,7 @@ async function handleRequest(request, response) {
     return;
   }
 
-  const currentUser = getAuthUser(request, users);
+  const currentUser = getAuthUser(request, database);
   if (!currentUser) {
     sendError(response, 401, 'Faça login para continuar.');
     return;
@@ -185,8 +212,7 @@ async function handleRequest(request, response) {
   }
 
   const habitId = segments[2];
-  const allHabits = await readHabits();
-  const habits = allHabits.filter((habit) => habit.userId === currentUser.id);
+  const habits = database.prepare('SELECT * FROM habits WHERE user_id = ? ORDER BY created_at, rowid').all(currentUser.id).map(habitFromRow);
 
   if (request.method === 'GET' && segments.length === 2) {
     sendJson(response, 200, habits);
@@ -211,8 +237,7 @@ async function handleRequest(request, response) {
       completedToday: false,
       weekProgress: 0,
     };
-    habits.push(habit);
-    await writeHabits([...allHabits, habit]);
+    database.prepare('INSERT INTO habits (id, user_id, title, icon, color, streak, completed_today, week_progress) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(habit.id, habit.userId, habit.title, habit.icon, habit.color, habit.streak, 0, habit.weekProgress);
     sendJson(response, 201, habit);
     return;
   }
@@ -232,18 +257,18 @@ async function handleRequest(request, response) {
     }
 
     const currentHabit = habits[habitIndex];
-    habits[habitIndex] = {
+    const updatedHabit = {
       ...currentHabit,
       ...input,
       title: input.title === undefined ? currentHabit.title : input.title.trim(),
     };
-    await writeHabits(allHabits.map((habit) => habit.id === habitId ? habits[habitIndex] : habit));
-    sendJson(response, 200, habits[habitIndex]);
+    database.prepare('UPDATE habits SET title = ?, icon = ?, color = ?, completed_today = ? WHERE id = ? AND user_id = ?').run(updatedHabit.title, updatedHabit.icon, updatedHabit.color, updatedHabit.completedToday ? 1 : 0, habitId, currentUser.id);
+    sendJson(response, 200, updatedHabit);
     return;
   }
 
   if (request.method === 'DELETE' && segments.length === 3) {
-    await writeHabits(allHabits.filter((habit) => habit.id !== habitId));
+    database.prepare('DELETE FROM habits WHERE id = ? AND user_id = ?').run(habitId, currentUser.id);
     sendJson(response, 204);
     return;
   }
@@ -251,10 +276,10 @@ async function handleRequest(request, response) {
   sendError(response, 405, 'Method not allowed');
 }
 
-ensureDataFile()
-  .then(() => {
+ensureDatabase()
+  .then((database) => {
     const server = http.createServer((request, response) => {
-      handleRequest(request, response).catch((error) => {
+      handleRequest(request, response, database).catch((error) => {
         console.error(error);
         if (!response.headersSent) sendError(response, 500, 'Internal server error');
       });
