@@ -1,5 +1,6 @@
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Habit, HabitColor } from '@/lib/types';
 
 const configuredApiUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
@@ -8,6 +9,7 @@ const isAndroidEmulator = Platform.OS === 'android' && !Constants.isDevice;
 const apiHost = expoHost || (isAndroidEmulator ? '10.0.2.2' : 'localhost');
 const API_URL = (configuredApiUrl || `http://${apiHost}:3000/api`).replace(/^https:\/\//, 'http://');
 const REQUEST_TIMEOUT_MS = 5000;
+const LOCAL_HABITS_KEY = '@arrise/local-habits';
 
 type HabitInput = Pick<Habit, 'title' | 'icon' | 'color'>;
 type HabitUpdate = Partial<HabitInput> & Partial<Pick<Habit, 'completedToday'>>;
@@ -43,25 +45,69 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export function getHabits() {
-  return request<Habit[]>('/habits');
-}
-
-export function createHabit(input: HabitInput) {
-  return request<Habit>('/habits', {
-    method: 'POST',
-    body: JSON.stringify(input),
+  return request<Habit[]>('/habits').then(async (habits) => {
+    await AsyncStorage.setItem(LOCAL_HABITS_KEY, JSON.stringify(habits));
+    return habits;
+  }).catch(async () => {
+    const stored = await AsyncStorage.getItem(LOCAL_HABITS_KEY);
+    return stored ? JSON.parse(stored) as Habit[] : [];
   });
 }
 
-export function updateHabit(id: string, input: HabitUpdate) {
-  return request<Habit>(`/habits/${id}`, {
-    method: 'PATCH',
-    body: JSON.stringify(input),
-  });
+export async function createHabit(input: HabitInput) {
+  try {
+    const habit = await request<Habit>('/habits', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+    await AsyncStorage.setItem(LOCAL_HABITS_KEY, JSON.stringify(await getCachedHabits()));
+    return habit;
+  } catch {
+    const habits = await getCachedHabits();
+    const habit: Habit = {
+      ...input,
+      id: `local-${Date.now()}`,
+      streak: 0,
+      completedToday: false,
+      weekProgress: 0,
+    };
+    await AsyncStorage.setItem(LOCAL_HABITS_KEY, JSON.stringify([...habits, habit]));
+    return habit;
+  }
 }
 
-export function deleteHabit(id: string) {
-  return request<void>(`/habits/${id}`, { method: 'DELETE' });
+async function getCachedHabits() {
+  const stored = await AsyncStorage.getItem(LOCAL_HABITS_KEY);
+  return stored ? JSON.parse(stored) as Habit[] : [];
+}
+
+export async function updateHabit(id: string, input: HabitUpdate) {
+  try {
+    const habit = await request<Habit>(`/habits/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    });
+    const habits = await getCachedHabits();
+    await AsyncStorage.setItem(LOCAL_HABITS_KEY, JSON.stringify(habits.map((item) => item.id === id ? habit : item)));
+    return habit;
+  } catch {
+    const habits = await getCachedHabits();
+    const current = habits.find((item) => item.id === id);
+    if (!current) throw new Error('Habit not found');
+    const habit = { ...current, ...input };
+    await AsyncStorage.setItem(LOCAL_HABITS_KEY, JSON.stringify(habits.map((item) => item.id === id ? habit : item)));
+    return habit;
+  }
+}
+
+export async function deleteHabit(id: string) {
+  try {
+    await request<void>(`/habits/${id}`, { method: 'DELETE' });
+  } catch {
+    // Keep local mode usable when the API is offline.
+  }
+  const habits = await getCachedHabits();
+  await AsyncStorage.setItem(LOCAL_HABITS_KEY, JSON.stringify(habits.filter((item) => item.id !== id)));
 }
 
 export { API_URL };

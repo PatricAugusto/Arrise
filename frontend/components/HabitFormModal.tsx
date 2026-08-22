@@ -7,7 +7,7 @@ interface HabitFormModalProps {
   visible: boolean;
   habit?: Habit | null;
   onClose: () => void;
-  onSave: (data: Pick<Habit, 'title' | 'icon' | 'color'>) => void;
+  onSave: (data: Pick<Habit, 'title' | 'icon' | 'color'>) => void | Promise<void>;
   onDelete: (habit: Habit) => void;
 }
 
@@ -23,18 +23,29 @@ export function HabitFormModal({ visible, habit, onClose, onSave, onDelete }: Ha
   const [title, setTitle] = useState('');
   const [color, setColor] = useState<HabitColor>('aurora');
   const [icon, setIcon] = useState(ICONS[0]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!visible) return;
     setTitle(habit?.title ?? '');
     setColor(habit?.color ?? 'aurora');
     setIcon(habit?.icon ?? ICONS[0]);
+    setSaveError(null);
   }, [visible, habit]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const normalizedTitle = title.trim();
-    if (!normalizedTitle) return;
-    onSave({ title: normalizedTitle, icon, color });
+    if (!normalizedTitle || isSaving) return;
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      await onSave({ title: normalizedTitle, icon, color });
+    } catch {
+      setSaveError('Não foi possível salvar. Tente novamente.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDelete = () => {
@@ -58,8 +69,8 @@ export function HabitFormModal({ visible, habit, onClose, onSave, onDelete }: Ha
               <Text className="font-mono text-[10px] tracking-[2px] text-aurora-500">ARRISE://CONFIG</Text>
               <Text className="mt-1 font-display text-2xl text-text">{habit ? 'Editar hábito' : 'Novo hábito'}</Text>
             </View>
-            <Pressable onPress={onClose} className="h-10 w-10 items-center justify-center rounded-full border border-glass-border/10" accessibilityLabel="Fechar">
-              <Ionicons name="close" size={20} color="#8B9EA3" />
+            <Pressable onPress={onClose} className="h-10 w-10 items-center justify-center rounded-full border border-glass-border/10" accessibilityRole="button" accessibilityLabel="Fechar">
+              <Ionicons name="close" size={20} color="#8793A1" />
             </Pressable>
           </View>
 
@@ -69,12 +80,13 @@ export function HabitFormModal({ visible, habit, onClose, onSave, onDelete }: Ha
               value={title}
               onChangeText={setTitle}
               placeholder="Ex.: Caminhar 20 minutos"
-              placeholderTextColor="#65787D"
+              placeholderTextColor="#8793A1"
               maxLength={48}
               autoFocus={!habit}
               className="mb-5 rounded-2xl border border-glass-border/10 bg-bg px-4 py-4 font-body text-base text-text"
               returnKeyType="done"
               onSubmitEditing={handleSave}
+              accessibilityLabel="Nome do hábito"
             />
 
             <Text className="mb-2 font-mono text-[10px] tracking-[1.5px] text-text-dim">ÍCONE</Text>
@@ -83,6 +95,8 @@ export function HabitFormModal({ visible, habit, onClose, onSave, onDelete }: Ha
                 <Pressable
                   key={item}
                   onPress={() => setIcon(item)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: icon === item }}
                   className={`h-11 w-11 items-center justify-center rounded-xl border ${icon === item ? 'border-aurora-500 bg-aurora-500/10' : 'border-glass-border/10 bg-bg'}`}
                   accessibilityLabel={`Selecionar ícone ${item}`}
                 >
@@ -97,6 +111,9 @@ export function HabitFormModal({ visible, habit, onClose, onSave, onDelete }: Ha
                 <Pressable
                   key={item.value}
                   onPress={() => setColor(item.value)}
+                  accessibilityRole="radio"
+                  accessibilityLabel={`Cor ${item.label}`}
+                  accessibilityState={{ selected: color === item.value }}
                   className={`flex-1 flex-row items-center justify-center rounded-xl border py-3 ${color === item.value ? 'border-aurora-500/60 bg-aurora-500/10' : 'border-glass-border/10 bg-bg'}`}
                 >
                   <View style={{ backgroundColor: item.hex }} className="mr-2 h-2 w-2 rounded-full" />
@@ -107,13 +124,17 @@ export function HabitFormModal({ visible, habit, onClose, onSave, onDelete }: Ha
 
             <Pressable
               onPress={handleSave}
-              disabled={!title.trim()}
-              className={`items-center rounded-2xl py-4 ${title.trim() ? 'bg-aurora-500' : 'bg-text-dim/20'}`}
+              disabled={!title.trim() || isSaving}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !title.trim() || isSaving, busy: isSaving }}
+              className={`items-center rounded-2xl py-4 ${title.trim() && !isSaving ? 'bg-aurora-500' : 'bg-text-dim/20'}`}
             >
-              <Text className={`font-body-semibold text-sm ${title.trim() ? 'text-bg' : 'text-text-dim'}`}>
-                {habit ? 'Salvar alterações' : 'Adicionar hábito'}
+              <Text className={`font-body-semibold text-sm ${title.trim() && !isSaving ? 'text-bg' : 'text-text-dim'}`}>
+                {isSaving ? 'Salvando...' : habit ? 'Salvar alterações' : 'Adicionar hábito'}
               </Text>
             </Pressable>
+
+            {!!saveError && <Text accessibilityRole="alert" className="mt-3 text-center font-body text-sm text-ember-500">{saveError}</Text>}
 
             {habit && (
               <Pressable onPress={handleDelete} className="mt-3 flex-row items-center justify-center py-3" accessibilityLabel="Excluir hábito">

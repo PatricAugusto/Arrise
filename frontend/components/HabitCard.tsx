@@ -96,12 +96,18 @@ export function HabitCard({ habit, onToggle, onDelete, onEdit }: HabitCardProps)
       <GestureDetector gesture={pan}>
         <Animated.View style={cardStyle}>
           <GlassCard>
-            <Pressable onPress={() => onToggle(habit.id)} className="flex-row items-center px-4 py-4 active:opacity-70">
+            <Pressable
+              onPress={() => onToggle(habit.id)}
+              accessibilityRole="checkbox"
+              accessibilityLabel={`${habit.title}, ${habit.completedToday ? 'concluído' : 'pendente'}`}
+              accessibilityState={{ checked: habit.completedToday }}
+              className="flex-row items-center px-4 py-4 active:opacity-70"
+            >
               <View className={`w-10 h-10 rounded-xl items-center justify-center mr-3 ${colors.iconBg}`}>
                 <Ionicons name={habit.icon as any} size={20} color={colors.iconColor} />
               </View>
               <View className="flex-1">
-                <Text className={`font-body-semibold text-[15px] text-text ${habit.completedToday ? 'line-through text-text-dim' : ''}`}>
+                <Text className={`font-body-semibold text-base leading-5 text-text ${habit.completedToday ? 'line-through text-text-dim' : ''}`}>
                   {habit.title}
                 </Text>
                 <View className="flex-row items-center mt-1">
@@ -118,7 +124,7 @@ export function HabitCard({ habit, onToggle, onDelete, onEdit }: HabitCardProps)
                 {habit.completedToday && <View className={`w-3.5 h-3.5 rounded-full ${colors.dot}`} />}
               </Animated.View>
               <Pressable onPress={() => onEdit(habit)} hitSlop={10} className="ml-3" accessibilityLabel={`Editar ${habit.title}`}>
-                <Ionicons name="ellipsis-horizontal" size={20} color="#8B9EA3" />
+                <Ionicons name="ellipsis-horizontal" size={20} color="#8793A1" />
               </Pressable>
             </Pressable>
           </GlassCard>

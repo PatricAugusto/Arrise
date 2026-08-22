@@ -13,9 +13,9 @@ module.exports = {
         glass: 'rgb(var(--arrise-glass) / <alpha-value>)',
         'glass-border': 'rgb(var(--arrise-glass-border) / <alpha-value>)',
         // Functional grayscale accents for the terminal interface.
-        violet: { DEFAULT: '#A7A7A0', 50: '#F2F2EE', 400: '#C6C6BE', 500: '#A7A7A0', 600: '#777770' },
-        aurora: { DEFAULT: '#F4F4EF', 400: '#FFFFFF', 500: '#F4F4EF', 600: '#C9C9C0' },
-        ember:  { DEFAULT: '#8C8C84', 400: '#B4B4AA', 500: '#8C8C84', 600: '#62625D' },
+        violet: { DEFAULT: '#B8C0CC', 50: '#F3F6FA', 400: '#D5DCE5', 500: '#B8C0CC', 600: '#7B8797' },
+        aurora: { DEFAULT: '#00D9FF', 400: '#5CEBFF', 500: '#00D9FF', 600: '#00A8C6' },
+        ember:  { DEFAULT: '#FF4FD8', 400: '#FF8AE7', 500: '#FF4FD8', 600: '#C91AA5' },
       },
       fontFamily: {
         display: ['SpaceGrotesk_700Bold'],

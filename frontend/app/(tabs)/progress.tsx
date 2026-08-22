@@ -10,9 +10,9 @@ import { Habit } from '@/lib/types';
 import { getHabits } from '@/lib/api';
 
 const RING_COLOR: Record<HabitColor, string> = {
-  violet: '#A7A7A0',
-  aurora: '#F4F4EF',
-  ember: '#8C8C84',
+  violet: '#B8C0CC',
+  aurora: '#00D9FF',
+  ember: '#FF4FD8',
 };
 
 export default function ProgressScreen() {
@@ -65,7 +65,7 @@ export default function ProgressScreen() {
         <Text className="text-text font-body-semibold text-sm mb-3">Progresso semanal</Text>
 
         {habits.map((habit) => (
-          <GlassCard key={habit.id} className="flex-row items-center p-4 mb-3">
+          <GlassCard key={habit.id} className="mb-3 flex-row items-center p-4">
             <ProgressRing
               progress={habit.weekProgress}
               size={64}
@@ -74,10 +74,16 @@ export default function ProgressScreen() {
               label={`${Math.round(habit.weekProgress * 100)}`}
             />
             <View className="ml-4 flex-1">
-              <Text className="font-body-semibold text-text text-base">{habit.title}</Text>
-              <View className="flex-row items-center mt-1">
-                <Ionicons name="flame-outline" size={12} color="#8C8C84" />
-                <Text className="font-mono text-xs text-text-dim ml-1">
+              <View className="flex-row items-start justify-between gap-2">
+                <Text className="flex-1 font-body-semibold text-base leading-5 text-text">{habit.title}</Text>
+                <Text className="font-mono text-sm text-aurora-500">{Math.round(habit.weekProgress * 100)}%</Text>
+              </View>
+              <View className="mt-3 h-2 overflow-hidden rounded-full bg-text-dim/20" accessibilityLabel={`Progresso semanal de ${habit.title}`} accessibilityValue={{ min: 0, max: 100, now: Math.round(habit.weekProgress * 100) }}>
+                <View className="h-full rounded-full bg-aurora-500" style={{ width: `${Math.round(habit.weekProgress * 100)}%` }} />
+              </View>
+              <View className="mt-2 flex-row items-center">
+                <Ionicons name="flame-outline" size={13} color="#FF4FD8" />
+                <Text className="ml-1 font-mono text-xs text-text-dim">
                   {habit.streak} {habit.streak === 1 ? 'dia' : 'dias'} seguidos
                 </Text>
               </View>

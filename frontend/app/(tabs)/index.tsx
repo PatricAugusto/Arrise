@@ -80,8 +80,9 @@ export default function TodayScreen() {
       }
       setFormVisible(false);
       setEditingHabit(null);
-    } catch {
+    } catch (error) {
       setApiError("Não foi possível salvar este hábito.");
+      throw error;
     }
   };
 
@@ -100,7 +101,7 @@ export default function TodayScreen() {
             <View className="mr-2 h-2 w-2 rounded-full bg-aurora-500" />
             <Text className="font-mono text-[10px] tracking-[2px] text-aurora-500">ARRISE://DAILY</Text>
           </View>
-          <Text className="text-text-dim font-body text-sm">Bom dia, Alex</Text>
+          <Text className="text-text-dim font-body text-sm">Bom dia, Patric</Text>
           <Text className="text-text font-display text-3xl">Seu ritmo hoje</Text>
         </View>
         <Pressable
