@@ -12,9 +12,9 @@ interface HabitFormModalProps {
 }
 
 const COLORS: Array<{ value: HabitColor; label: string; hex: string }> = [
-  { value: 'aurora', label: 'Aurora', hex: '#3CEFD8' },
-  { value: 'violet', label: 'Metal', hex: '#A8B8BB' },
-  { value: 'ember', label: 'Ember', hex: '#FFA37D' },
+  { value: 'aurora', label: 'White', hex: '#F4F4EF' },
+  { value: 'violet', label: 'Silver', hex: '#A7A7A0' },
+  { value: 'ember', label: 'Graphite', hex: '#8C8C84' },
 ];
 
 const ICONS = ['sparkles-outline', 'water-outline', 'book-outline', 'barbell-outline', 'leaf-outline', 'moon-outline'];
@@ -55,7 +55,7 @@ export function HabitFormModal({ visible, habit, onClose, onSave, onDelete }: Ha
         <View className="rounded-t-[28px] border-t border-aurora-500/20 bg-bg-elevated px-5 pb-8 pt-4">
           <View className="mb-5 flex-row items-center justify-between">
             <View>
-              <Text className="font-mono text-[10px] tracking-[2px] text-aurora-500">ARRISE / CONFIG</Text>
+              <Text className="font-mono text-[10px] tracking-[2px] text-aurora-500">ARRISE://CONFIG</Text>
               <Text className="mt-1 font-display text-2xl text-text">{habit ? 'Editar hábito' : 'Novo hábito'}</Text>
             </View>
             <Pressable onPress={onClose} className="h-10 w-10 items-center justify-center rounded-full border border-glass-border/10" accessibilityLabel="Fechar">
@@ -86,7 +86,7 @@ export function HabitFormModal({ visible, habit, onClose, onSave, onDelete }: Ha
                   className={`h-11 w-11 items-center justify-center rounded-xl border ${icon === item ? 'border-aurora-500 bg-aurora-500/10' : 'border-glass-border/10 bg-bg'}`}
                   accessibilityLabel={`Selecionar ícone ${item}`}
                 >
-                  <Ionicons name={item as any} size={19} color={icon === item ? '#3CEFD8' : '#8B9EA3'} />
+                  <Ionicons name={item as any} size={19} color={icon === item ? '#F4F4EF' : '#777770'} />
                 </Pressable>
               ))}
             </View>
@@ -117,7 +117,7 @@ export function HabitFormModal({ visible, habit, onClose, onSave, onDelete }: Ha
 
             {habit && (
               <Pressable onPress={handleDelete} className="mt-3 flex-row items-center justify-center py-3" accessibilityLabel="Excluir hábito">
-                <Ionicons name="trash-outline" size={16} color="#FF8A5B" />
+                <Ionicons name="trash-outline" size={16} color="#8C8C84" />
                 <Text className="ml-2 font-body-medium text-xs text-ember-500">Excluir hábito</Text>
               </Pressable>
             )}

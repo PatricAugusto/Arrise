@@ -20,8 +20,8 @@ export function ProgressRing({
   progress,
   size = 120,
   strokeWidth = 10,
-  color = '#00E5C7',
-  trackColor = 'rgba(143, 150, 168, 0.18)',
+  color = '#F4F4EF',
+  trackColor = 'rgba(157, 157, 149, 0.18)',
   label,
   sublabel,
 }: ProgressRingProps) {

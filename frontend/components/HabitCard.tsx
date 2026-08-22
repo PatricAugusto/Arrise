@@ -23,9 +23,9 @@ interface HabitCardProps {
 }
 
 const COLOR_STYLES: Record<HabitColor, { iconBg: string; iconColor: string; ring: string; dot: string }> = {
-  violet: { iconBg: 'bg-violet-500/15', iconColor: '#A8B8BB', ring: 'border-violet-500', dot: 'bg-violet-500' },
-  aurora: { iconBg: 'bg-aurora-500/15', iconColor: '#3CEFD8', ring: 'border-aurora-500', dot: 'bg-aurora-500' },
-  ember: { iconBg: 'bg-ember-500/15', iconColor: '#FFA37D', ring: 'border-ember-500', dot: 'bg-ember-500' },
+  violet: { iconBg: 'bg-violet-500/15', iconColor: '#C6C6BE', ring: 'border-violet-500', dot: 'bg-violet-500' },
+  aurora: { iconBg: 'bg-aurora-500/15', iconColor: '#FFFFFF', ring: 'border-aurora-500', dot: 'bg-aurora-500' },
+  ember: { iconBg: 'bg-ember-500/15', iconColor: '#B4B4AA', ring: 'border-ember-500', dot: 'bg-ember-500' },
 };
 
 const SWIPE_THRESHOLD = 88;
@@ -86,10 +86,10 @@ export function HabitCard({ habit, onToggle, onDelete, onEdit }: HabitCardProps)
     <View className="mb-3">
       <View className="absolute inset-0 flex-row items-center justify-between px-6">
         <Animated.View style={completeActionStyle} className="flex-row items-center gap-2">
-          <Ionicons name="checkmark-circle" size={26} color="#3CEFD8" />
+          <Ionicons name="checkmark-circle" size={26} color="#F4F4EF" />
         </Animated.View>
         <Animated.View style={deleteActionStyle} className="flex-row items-center gap-2">
-          <Ionicons name="trash" size={22} color="#FF8A5B" />
+          <Ionicons name="trash" size={22} color="#8C8C84" />
         </Animated.View>
       </View>
 
@@ -105,7 +105,7 @@ export function HabitCard({ habit, onToggle, onDelete, onEdit }: HabitCardProps)
                   {habit.title}
                 </Text>
                 <View className="flex-row items-center mt-1">
-                  <Ionicons name="flame-outline" size={13} color="#FF8A5B" />
+                  <Ionicons name="flame-outline" size={13} color="#8C8C84" />
                   <Text className="font-mono text-xs text-text-dim ml-1">
                     {habit.streak} {habit.streak === 1 ? 'dia' : 'dias'}
                   </Text>

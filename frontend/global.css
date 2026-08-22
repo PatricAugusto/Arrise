@@ -4,27 +4,25 @@
 
 /*
   Arrise — Design Tokens
-  Direção: "ascensão" — cada hábito concluído é um passo subindo.
-  Paleta fria e futurista (violeta -> ciano "aurora") com um único
-  contraponto quente (coral) reservado para o indicador de streak/fogo.
+  Direção: terminal monocromático com superfícies liquid glass.
 */
 
 :root {
   /* Light theme */
-  --arrise-bg: 241 244 246;           /* #F1F4F6 */
-  --arrise-bg-elevated: 250 252 252;  /* #FAFCFC */
-  --arrise-text: 18 20 28;            /* #12141C */
-  --arrise-text-dim: 100 106 122;     /* #646A7A */
+  --arrise-bg: 244 244 242;
+  --arrise-bg-elevated: 255 255 253;
+  --arrise-text: 18 18 18;
+  --arrise-text-dim: 103 103 99;
   --arrise-glass: 255 255 255;
   --arrise-glass-border: 18 20 28;
 }
 
 .dark:root {
   /* Dark theme */
-  --arrise-bg: 7 13 18;               /* #070D12 */
-  --arrise-bg-elevated: 14 24 30;     /* #0E181E */
-  --arrise-text: 237 239 245;         /* #EDEFF5 */
-  --arrise-text-dim: 139 158 163;     /* #8B9EA3 */
+  --arrise-bg: 10 10 10;
+  --arrise-bg-elevated: 19 19 18;
+  --arrise-text: 246 246 241;
+  --arrise-text-dim: 157 157 149;
   --arrise-glass: 255 255 255;
   --arrise-glass-border: 255 255 255;
 }

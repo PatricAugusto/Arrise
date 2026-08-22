@@ -1,6 +1,7 @@
 import "../global.css";
 import { useEffect, useCallback } from "react";
 import { Stack } from "expo-router";
+import { TamaguiProvider, Theme } from "tamagui";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
@@ -21,6 +22,7 @@ import {
 } from "@expo-google-fonts/space-mono";
 
 import { ThemeProvider, useTheme } from "@/lib/theme";
+import { tamaguiConfig } from "@/tamagui.config";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -53,15 +55,19 @@ function RootLayoutContent() {
   if (!fontsLoaded) return null;
 
   return (
-    <GestureHandlerRootView
-      style={{ flex: 1 }}
-      className={theme === "dark" ? "dark" : ""}
-    >
-      <StatusBar style={theme === "dark" ? "light" : "dark"} />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-      </Stack>
-    </GestureHandlerRootView>
+    <TamaguiProvider config={tamaguiConfig} defaultTheme={theme}>
+      <Theme name={theme}>
+        <GestureHandlerRootView
+          style={{ flex: 1 }}
+          className={theme === "dark" ? "dark" : ""}
+        >
+          <StatusBar style={theme === "dark" ? "light" : "dark"} />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+          </Stack>
+        </GestureHandlerRootView>
+      </Theme>
+    </TamaguiProvider>
   );
 }
 

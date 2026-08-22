@@ -93,12 +93,12 @@ export default function TodayScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-bg" edges={["top"]}>
-      <View className="absolute -right-20 top-20 w-56 h-56 rounded-full bg-aurora-500/5" />
+      <View className="absolute -right-20 top-20 h-56 w-56 rounded-full border border-white/5" />
       <View className="px-5 pt-5 pb-3 flex-row items-center justify-between">
         <View>
           <View className="flex-row items-center mb-2">
-            <View className="w-2 h-2 rounded-full bg-aurora-500 mr-2" />
-            <Text className="text-aurora-500 font-mono text-[10px] tracking-[2px]">ARRISE / DAILY</Text>
+            <View className="mr-2 h-2 w-2 rounded-full bg-aurora-500" />
+            <Text className="font-mono text-[10px] tracking-[2px] text-aurora-500">ARRISE://DAILY</Text>
           </View>
           <Text className="text-text-dim font-body text-sm">Bom dia, Alex</Text>
           <Text className="text-text font-display text-3xl">Seu ritmo hoje</Text>
@@ -108,15 +108,15 @@ export default function TodayScreen() {
           hitSlop={12}
           className="w-11 h-11 rounded-full border border-glass-border/10 items-center justify-center bg-bg-elevated/70"
         >
-          <Ionicons name={theme === "dark" ? "moon-outline" : "sunny-outline"} size={18} color={theme === "dark" ? "#3CEFD8" : "#65787D"} />
+          <Ionicons name={theme === "dark" ? "moon-outline" : "sunny-outline"} size={18} color={theme === "dark" ? "#F4F4EF" : "#676761"} />
         </Pressable>
       </View>
 
-      <View className="mx-5 mt-2 mb-5 rounded-glass border border-aurora-500/20 bg-bg-elevated/80 px-5 py-5 flex-row items-center justify-between">
+      <View className="mx-5 mb-5 mt-2 flex-row items-center justify-between rounded-glass border border-white/10 bg-white/[0.06] px-5 py-5">
         <View>
-          <Text className="text-text-dim font-mono text-[10px] tracking-[1.5px]">STATUS / CONSISTENCY</Text>
+          <Text className="font-mono text-[10px] tracking-[1.5px] text-text-dim">SYS.STATUS // CONSISTENCY</Text>
           <Text className="text-text font-display text-2xl mt-2">Em movimento</Text>
-          <Text className="text-text-dim font-body text-xs mt-1">Pequenos sinais, todos os dias.</Text>
+          <Text className="mt-1 font-body text-xs text-text-dim">Pequenos sinais, todos os dias.</Text>
         </View>
         <ProgressRing
           progress={percentage}
@@ -128,10 +128,10 @@ export default function TodayScreen() {
       </View>
 
       <View className="px-5 flex-row items-center justify-between mb-2">
-        <Text className="text-text font-body-semibold text-sm">Próximos sinais</Text>
+        <Text className="font-body-semibold text-sm text-text">$ próximos sinais</Text>
         <Pressable onPress={openCreateForm} className="flex-row items-center" accessibilityLabel="Adicionar hábito">
-          <Ionicons name="add" size={16} color="#3CEFD8" />
-          <Text className="ml-1 text-aurora-500 font-body-medium text-xs">Novo</Text>
+          <Ionicons name="add" size={16} color="#F4F4EF" />
+          <Text className="ml-1 font-body-medium text-xs text-aurora-500">novo --init</Text>
         </Pressable>
       </View>
 
@@ -157,8 +157,8 @@ export default function TodayScreen() {
               {isLoading ? "Sincronizando hábitos..." : apiError ?? "Nenhum hábito por aqui. Adicione um novo sinal."}
             </Text>
             {!!apiError && !isLoading && (
-              <Pressable onPress={loadHabits} className="mt-4 rounded-xl border border-aurora-500/30 px-4 py-2">
-                <Text className="text-aurora-500 font-body-medium text-xs">Tentar novamente</Text>
+              <Pressable onPress={loadHabits} className="mt-4 rounded-xl border border-white/20 px-4 py-2">
+                <Text className="font-body-medium text-xs text-aurora-500">retry --sync</Text>
               </Pressable>
             )}
           </View>
@@ -167,7 +167,7 @@ export default function TodayScreen() {
 
       <Pressable
         onPress={openCreateForm}
-        className="absolute bottom-24 right-5 h-14 w-14 items-center justify-center rounded-full bg-aurora-500 shadow-lg"
+        className="absolute bottom-24 right-5 h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-aurora-500 shadow-lg"
         accessibilityLabel="Adicionar hábito"
       >
         <Ionicons name="add" size={27} color="#071318" />

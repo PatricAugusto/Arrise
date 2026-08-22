@@ -12,10 +12,10 @@ module.exports = {
         'text-dim': 'rgb(var(--arrise-text-dim) / <alpha-value>)',
         glass: 'rgb(var(--arrise-glass) / <alpha-value>)',
         'glass-border': 'rgb(var(--arrise-glass-border) / <alpha-value>)',
-        // Accent — gradiente de ascensão
-        violet: { DEFAULT: '#8A9BA0', 50: '#EFF3F4', 400: '#A8B8BB', 500: '#8A9BA0', 600: '#65787D' },
-        aurora: { DEFAULT: '#00E5C7', 400: '#3CEFD8', 500: '#00E5C7', 600: '#00BFA5' },
-        ember:  { DEFAULT: '#FF8A5B', 400: '#FFA37D', 500: '#FF8A5B', 600: '#F26A36' },
+        // Functional grayscale accents for the terminal interface.
+        violet: { DEFAULT: '#A7A7A0', 50: '#F2F2EE', 400: '#C6C6BE', 500: '#A7A7A0', 600: '#777770' },
+        aurora: { DEFAULT: '#F4F4EF', 400: '#FFFFFF', 500: '#F4F4EF', 600: '#C9C9C0' },
+        ember:  { DEFAULT: '#8C8C84', 400: '#B4B4AA', 500: '#8C8C84', 600: '#62625D' },
       },
       fontFamily: {
         display: ['SpaceGrotesk_700Bold'],

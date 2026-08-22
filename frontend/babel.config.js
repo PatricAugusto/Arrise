@@ -1,10 +1,15 @@
 module.exports = function (api) {
-  api.cache(true);
+  const isProduction = api.env('production');
   return {
     presets: [
       ['babel-preset-expo', { jsxImportSource: 'nativewind' }],
       'nativewind/babel',
     ],
-    plugins: ['react-native-worklets/plugin'],
+    plugins: [
+      ...(isProduction
+        ? [['@tamagui/babel-plugin', { components: ['tamagui'], config: './tamagui.config.ts' }]]
+        : []),
+      'react-native-worklets/plugin',
+    ],
   };
 };
