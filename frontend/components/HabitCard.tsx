@@ -8,18 +8,22 @@ import Animated, {
   withSpring,
   withSequence,
   withTiming,
+  withDelay,
+  Easing,
   runOnJS,
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
 import { GlassCard } from './GlassCard';
 import { Habit, HabitColor } from '@/lib/types';
+import { CyberPulse } from './CyberPulse';
 
 interface HabitCardProps {
   habit: Habit;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (habit: Habit) => void;
+  entranceDelay?: number;
 }
 
 const COLOR_STYLES: Record<HabitColor, { iconBg: string; iconColor: string; ring: string; dot: string }> = {
@@ -31,18 +35,20 @@ const COLOR_STYLES: Record<HabitColor, { iconBg: string; iconColor: string; ring
 const SWIPE_THRESHOLD = 88;
 const MAX_SWIPE = 120;
 
-export function HabitCard({ habit, onToggle, onDelete, onEdit }: HabitCardProps) {
+export function HabitCard({ habit, onToggle, onDelete, onEdit, entranceDelay = 0 }: HabitCardProps) {
   const colors = COLOR_STYLES[habit.color];
 
   const translateX = useSharedValue(0);
   const checkScale = useSharedValue(1);
   const cardScale = useSharedValue(1);
+  const entryProgress = useSharedValue(0);
 
   useEffect(() => {
+    entryProgress.value = withDelay(entranceDelay, withTiming(1, { duration: 420, easing: Easing.out(Easing.cubic) }));
     if (habit.completedToday) {
       checkScale.value = withSequence(withSpring(1.35, { damping: 6 }), withSpring(1, { damping: 8 }));
     }
-  }, [habit.completedToday]);
+  }, [habit.completedToday, entryProgress]);
 
   const triggerToggle = () => onToggle(habit.id);
   const triggerDelete = () => onDelete(habit.id);
@@ -65,7 +71,8 @@ export function HabitCard({ habit, onToggle, onDelete, onEdit }: HabitCardProps)
     });
 
   const cardStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }, { scale: cardScale.value }],
+    opacity: entryProgress.value,
+    transform: [{ translateX: translateX.value }, { translateY: (1 - entryProgress.value) * 14 }, { scale: cardScale.value }],
   }));
 
   const checkStyle = useAnimatedStyle(() => ({
@@ -110,8 +117,8 @@ export function HabitCard({ habit, onToggle, onDelete, onEdit }: HabitCardProps)
                 <Text className={`font-body-semibold text-base leading-5 text-text ${habit.completedToday ? 'line-through text-text-dim' : ''}`}>
                   {habit.title}
                 </Text>
-                <View className="flex-row items-center mt-1">
-                  <Ionicons name="flame-outline" size={13} color="#8C8C84" />
+                <View className="mt-1 flex-row items-center">
+                  {habit.completedToday ? <CyberPulse color="#D7FF3F" size={5} /> : <Ionicons name="flame-outline" size={13} color="#8C8C84" />}
                   <Text className="font-mono text-xs text-text-dim ml-1">
                     {habit.streak} {habit.streak === 1 ? 'dia' : 'dias'}
                   </Text>

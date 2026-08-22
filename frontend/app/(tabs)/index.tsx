@@ -8,6 +8,7 @@ import { Habit } from "@/lib/types";
 import { HabitCard } from "@/components/HabitCard";
 import { ProgressRing } from "@/components/ProgressRing";
 import { HabitFormModal } from "@/components/HabitFormModal";
+import { CyberPulse } from "@/components/CyberPulse";
 import { createHabit, deleteHabit, getHabits, updateHabit } from "@/lib/api";
 
 export default function TodayScreen() {
@@ -100,7 +101,7 @@ export default function TodayScreen() {
       <View className="px-5 pb-4 pt-6 flex-row items-center justify-between">
         <View>
           <View className="flex-row items-center mb-2">
-            <View className="mr-2 h-1.5 w-1.5 rounded-full bg-aurora-500" />
+            <View className="mr-2"><CyberPulse color="#00E5FF" size={6} /></View>
             <Text className="font-mono text-[10px] tracking-[1.5px] text-aurora-500">ARRISE / DAILY_01</Text>
           </View>
           <Text className="text-text-dim font-body text-sm">Bom dia, {user?.name ?? "aí"}</Text>
@@ -118,7 +119,7 @@ export default function TodayScreen() {
 
       <View className="mx-5 mb-5 mt-2 flex-row items-center justify-between rounded-glass border border-aurora-500/20 bg-white/[0.06] px-5 py-5">
         <View>
-          <View className="mb-2 flex-row items-center"><View className="mr-2 h-1.5 w-1.5 bg-signal-500" /><Text className="font-mono text-[10px] tracking-[1.5px] text-text-dim">SYS.STATUS // ONLINE</Text></View>
+          <View className="mb-2 flex-row items-center"><View className="mr-2"><CyberPulse color="#D7FF3F" size={6} /></View><Text className="font-mono text-[10px] tracking-[1.5px] text-text-dim">SYS.STATUS // ONLINE</Text></View>
           <Text className="text-text font-display text-2xl mt-2">Em movimento</Text>
           <Text className="mt-1 font-body text-xs text-text-dim">Pequenos sinais, todos os dias.</Text>
         </View>
@@ -147,9 +148,10 @@ export default function TodayScreen() {
           paddingTop: 8,
           paddingBottom: 120,
         }}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <HabitCard
             habit={item}
+            entranceDelay={Math.min(index * 70, 280)}
             onToggle={handleToggle}
             onDelete={handleDelete}
             onEdit={openEditForm}

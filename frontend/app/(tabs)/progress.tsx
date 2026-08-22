@@ -8,6 +8,7 @@ import { ProgressRing } from '@/components/ProgressRing';
 import { HabitColor } from '@/lib/types';
 import { Habit } from '@/lib/types';
 import { getHabits } from '@/lib/api';
+import { CyberPulse } from '@/components/CyberPulse';
 
 const RING_COLOR: Record<HabitColor, string> = {
   violet: '#B8C0CC',
@@ -37,7 +38,7 @@ export default function ProgressScreen() {
     <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
       <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 120 }}>
         <View className="mb-2 flex-row items-center">
-          <View className="mr-2 h-1.5 w-1.5 bg-aurora-500" />
+          <View className="mr-2"><CyberPulse color="#00E5FF" size={6} /></View>
           <Text className="font-mono text-[10px] tracking-[1.5px] text-aurora-500">ARRISE / ANALYTICS_02</Text>
         </View>
         <Text className="mb-1 text-text font-display text-[32px] leading-9">Seu progresso</Text>
