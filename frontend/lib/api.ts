@@ -10,6 +10,7 @@ const apiHost = expoHost || (isAndroidEmulator ? '10.0.2.2' : 'localhost');
 const API_URL = (configuredApiUrl || `http://${apiHost}:3000/api`).replace(/^https:\/\//, 'http://');
 const REQUEST_TIMEOUT_MS = 5000;
 const LOCAL_HABITS_KEY = '@arrise/local-habits';
+const AUTH_TOKEN_KEY = '@arrise/auth-token';
 
 type HabitInput = Pick<Habit, 'title' | 'icon' | 'color'>;
 type HabitUpdate = Partial<HabitInput> & Partial<Pick<Habit, 'completedToday'>>;
@@ -20,8 +21,9 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
   let response: Response;
   try {
+    const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
     response = await fetch(`${API_URL}${path}`, {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       ...options,
       signal: controller.signal,
     });
@@ -52,6 +54,41 @@ export function getHabits() {
     const stored = await AsyncStorage.getItem(LOCAL_HABITS_KEY);
     return stored ? JSON.parse(stored) as Habit[] : [];
   });
+}
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: AuthUser;
+}
+
+export async function login(email: string, password: string) {
+  const result = await request<AuthResponse>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+  await AsyncStorage.setItem(AUTH_TOKEN_KEY, result.token);
+  return result.user;
+}
+
+export async function register(name: string, email: string, password: string) {
+  const result = await request<AuthResponse>('/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password }) });
+  await AsyncStorage.setItem(AUTH_TOKEN_KEY, result.token);
+  return result.user;
+}
+
+export function forgotPassword(email: string) {
+  return request<{ message: string }>('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
+}
+
+export async function clearAuthToken() {
+  await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
+}
+
+export async function getAuthToken() {
+  return AsyncStorage.getItem(AUTH_TOKEN_KEY);
 }
 
 export async function createHabit(input: HabitInput) {

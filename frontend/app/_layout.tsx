@@ -22,12 +22,14 @@ import {
 } from "@expo-google-fonts/space-mono";
 
 import { ThemeProvider, useTheme } from "@/lib/theme";
+import { AuthProvider, useAuth } from "@/lib/auth";
 import { tamaguiConfig } from "@/tamagui.config";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function RootLayoutContent() {
   const { theme } = useTheme();
+  const { user, isLoading } = useAuth();
 
   const [sgLoaded] = useSpaceGrotesk({
     SpaceGrotesk_500Medium,
@@ -52,7 +54,7 @@ function RootLayoutContent() {
     onLayoutRootView();
   }, [onLayoutRootView]);
 
-  if (!fontsLoaded) return null;
+  if (!fontsLoaded || isLoading) return null;
 
   return (
     <TamaguiProvider config={tamaguiConfig} defaultTheme={theme}>
@@ -63,7 +65,12 @@ function RootLayoutContent() {
         >
           <StatusBar style={theme === "dark" ? "light" : "dark"} />
           <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(tabs)" />
+            <Stack.Protected guard={!user}>
+              <Stack.Screen name="(auth)" />
+            </Stack.Protected>
+            <Stack.Protected guard={!!user}>
+              <Stack.Screen name="(tabs)" />
+            </Stack.Protected>
           </Stack>
         </GestureHandlerRootView>
       </Theme>
@@ -74,7 +81,9 @@ function RootLayoutContent() {
 export default function RootLayout() {
   return (
     <ThemeProvider>
-      <RootLayoutContent />
+      <AuthProvider>
+        <RootLayoutContent />
+      </AuthProvider>
     </ThemeProvider>
   );
 }

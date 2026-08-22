@@ -3,6 +3,7 @@ import { View, Text, FlatList, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/lib/theme";
+import { useAuth } from "@/lib/auth";
 import { Habit } from "@/lib/types";
 import { HabitCard } from "@/components/HabitCard";
 import { ProgressRing } from "@/components/ProgressRing";
@@ -11,6 +12,7 @@ import { createHabit, deleteHabit, getHabits, updateHabit } from "@/lib/api";
 
 export default function TodayScreen() {
   const { theme, toggleAt } = useTheme();
+  const { user, signOut } = useAuth();
   const [habits, setHabits] = useState<Habit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -101,16 +103,17 @@ export default function TodayScreen() {
             <View className="mr-2 h-2 w-2 rounded-full bg-aurora-500" />
             <Text className="font-mono text-[10px] tracking-[2px] text-aurora-500">ARRISE://DAILY</Text>
           </View>
-          <Text className="text-text-dim font-body text-sm">Bom dia, Patric</Text>
+          <Text className="text-text-dim font-body text-sm">Bom dia, {user?.name ?? "aí"}</Text>
           <Text className="text-text font-display text-3xl">Seu ritmo hoje</Text>
         </View>
-        <Pressable
-          onPress={(e) => toggleAt(e.nativeEvent.pageX, e.nativeEvent.pageY)}
-          hitSlop={12}
-          className="w-11 h-11 rounded-full border border-glass-border/10 items-center justify-center bg-bg-elevated/70"
-        >
-          <Ionicons name={theme === "dark" ? "moon-outline" : "sunny-outline"} size={18} color={theme === "dark" ? "#F4F4EF" : "#676761"} />
-        </Pressable>
+        <View className="flex-row items-center gap-2">
+          <Pressable onPress={(e) => toggleAt(e.nativeEvent.pageX, e.nativeEvent.pageY)} hitSlop={12} accessibilityRole="button" accessibilityLabel="Alternar tema" className="w-11 h-11 rounded-full border border-glass-border/10 items-center justify-center bg-bg-elevated/70">
+            <Ionicons name={theme === "dark" ? "moon-outline" : "sunny-outline"} size={18} color={theme === "dark" ? "#F4F4EF" : "#676761"} />
+          </Pressable>
+          <Pressable onPress={() => void signOut()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Sair da conta" className="w-11 h-11 rounded-full border border-glass-border/10 items-center justify-center bg-bg-elevated/70">
+            <Ionicons name="log-out-outline" size={18} color="#FF4FD8" />
+          </Pressable>
+        </View>
       </View>
 
       <View className="mx-5 mb-5 mt-2 flex-row items-center justify-between rounded-glass border border-white/10 bg-white/[0.06] px-5 py-5">

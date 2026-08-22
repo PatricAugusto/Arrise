@@ -25,5 +25,35 @@
     "streak": 0,
     "completedToday": true,
     "weekProgress": 0
+  },
+  {
+    "id": "c6f978d5-2047-414e-ae0d-8e6ce083bba8",
+    "userId": "37019f5e-3852-4194-8e39-3042d0b5c603",
+    "title": "Teste",
+    "icon": "moon-outline",
+    "color": "ember",
+    "streak": 0,
+    "completedToday": true,
+    "weekProgress": 0
+  },
+  {
+    "id": "17e102a5-7b40-4f85-a53e-944f77a880d7",
+    "userId": "37019f5e-3852-4194-8e39-3042d0b5c603",
+    "title": "Testeee",
+    "icon": "water-outline",
+    "color": "violet",
+    "streak": 0,
+    "completedToday": true,
+    "weekProgress": 0
+  },
+  {
+    "id": "690bd0de-6d23-41d7-91b2-a9427e947df0",
+    "userId": "37019f5e-3852-4194-8e39-3042d0b5c603",
+    "title": "Caminhadinha",
+    "icon": "leaf-outline",
+    "color": "violet",
+    "streak": 0,
+    "completedToday": true,
+    "weekProgress": 0
   }
 ]

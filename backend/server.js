@@ -1,10 +1,11 @@
 const http = require('node:http');
-const { randomUUID } = require('node:crypto');
+const { randomUUID, randomBytes, scryptSync, timingSafeEqual } = require('node:crypto');
 const { mkdir, readFile, rename, writeFile } = require('node:fs/promises');
 const path = require('node:path');
 
 const PORT = 3000;
 const DATA_FILE = path.join(__dirname, 'data', 'habits.json');
+const USERS_FILE = path.join(__dirname, 'data', 'users.json');
 const ALLOWED_COLORS = new Set(['violet', 'aurora', 'ember']);
 const MAX_BODY_SIZE = 1024 * 16;
 
@@ -15,6 +16,12 @@ async function ensureDataFile() {
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
     await writeFile(DATA_FILE, '[]', 'utf8');
+  }
+  try {
+    await readFile(USERS_FILE, 'utf8');
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    await writeFile(USERS_FILE, '[]', 'utf8');
   }
 }
 
@@ -27,6 +34,35 @@ async function writeHabits(habits) {
   const temporaryFile = `${DATA_FILE}.tmp`;
   await writeFile(temporaryFile, JSON.stringify(habits, null, 2), 'utf8');
   await rename(temporaryFile, DATA_FILE);
+}
+
+async function readUsers() {
+  return JSON.parse(await readFile(USERS_FILE, 'utf8'));
+}
+
+async function writeUsers(users) {
+  const temporaryFile = `${USERS_FILE}.tmp`;
+  await writeFile(temporaryFile, JSON.stringify(users, null, 2), 'utf8');
+  await rename(temporaryFile, USERS_FILE);
+}
+
+function hashPassword(password, salt = randomBytes(16).toString('hex')) {
+  return `${salt}:${scryptSync(password, salt, 64).toString('hex')}`;
+}
+
+function passwordMatches(password, storedHash) {
+  const [salt, hash] = storedHash.split(':');
+  const derived = scryptSync(password, salt, 64);
+  return timingSafeEqual(derived, Buffer.from(hash, 'hex'));
+}
+
+function publicUser(user) {
+  return { id: user.id, name: user.name, email: user.email };
+}
+
+function getAuthUser(request, users) {
+  const token = request.headers.authorization?.replace(/^Bearer\s+/i, '');
+  return users.find((user) => user.sessionToken === token) || null;
 }
 
 function sendJson(response, status, payload) {
@@ -90,13 +126,67 @@ async function handleRequest(request, response) {
     return;
   }
 
+  const users = await readUsers();
+  if (request.method === 'POST' && url.pathname === '/api/auth/register') {
+    const input = await readBody(request);
+    const name = typeof input.name === 'string' ? input.name.trim() : '';
+    const email = typeof input.email === 'string' ? input.email.trim().toLowerCase() : '';
+    const password = typeof input.password === 'string' ? input.password : '';
+    if (!name || !email || password.length < 8) {
+      sendError(response, 400, 'Nome, e-mail e senha com no mínimo 8 caracteres são obrigatórios.');
+      return;
+    }
+    if (users.some((user) => user.email === email)) {
+      sendError(response, 409, 'Já existe uma conta com este e-mail.');
+      return;
+    }
+    const user = { id: randomUUID(), name, email, passwordHash: hashPassword(password), sessionToken: randomBytes(32).toString('hex') };
+    users.push(user);
+    await writeUsers(users);
+    sendJson(response, 201, { token: user.sessionToken, user: publicUser(user) });
+    return;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/auth/login') {
+    const input = await readBody(request);
+    const email = typeof input.email === 'string' ? input.email.trim().toLowerCase() : '';
+    const password = typeof input.password === 'string' ? input.password : '';
+    const user = users.find((item) => item.email === email);
+    if (!user || !passwordMatches(password, user.passwordHash)) {
+      sendError(response, 401, 'E-mail ou senha inválidos.');
+      return;
+    }
+    user.sessionToken = randomBytes(32).toString('hex');
+    await writeUsers(users);
+    sendJson(response, 200, { token: user.sessionToken, user: publicUser(user) });
+    return;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/auth/forgot-password') {
+    const input = await readBody(request);
+    const email = typeof input.email === 'string' ? input.email.trim().toLowerCase() : '';
+    if (!email) {
+      sendError(response, 400, 'Informe um e-mail válido.');
+      return;
+    }
+    sendJson(response, 200, { message: 'Se houver uma conta, enviaremos instruções para este e-mail.' });
+    return;
+  }
+
+  const currentUser = getAuthUser(request, users);
+  if (!currentUser) {
+    sendError(response, 401, 'Faça login para continuar.');
+    return;
+  }
+
   if (segments[0] !== 'api' || segments[1] !== 'habits' || segments.length > 3) {
     sendError(response, 404, 'Route not found');
     return;
   }
 
   const habitId = segments[2];
-  const habits = await readHabits();
+  const allHabits = await readHabits();
+  const habits = allHabits.filter((habit) => habit.userId === currentUser.id);
 
   if (request.method === 'GET' && segments.length === 2) {
     sendJson(response, 200, habits);
@@ -113,6 +203,7 @@ async function handleRequest(request, response) {
 
     const habit = {
       id: randomUUID(),
+      userId: currentUser.id,
       title: input.title.trim(),
       icon: input.icon,
       color: input.color,
@@ -121,7 +212,7 @@ async function handleRequest(request, response) {
       weekProgress: 0,
     };
     habits.push(habit);
-    await writeHabits(habits);
+    await writeHabits([...allHabits, habit]);
     sendJson(response, 201, habit);
     return;
   }
@@ -146,14 +237,13 @@ async function handleRequest(request, response) {
       ...input,
       title: input.title === undefined ? currentHabit.title : input.title.trim(),
     };
-    await writeHabits(habits);
+    await writeHabits(allHabits.map((habit) => habit.id === habitId ? habits[habitIndex] : habit));
     sendJson(response, 200, habits[habitIndex]);
     return;
   }
 
   if (request.method === 'DELETE' && segments.length === 3) {
-    habits.splice(habitIndex, 1);
-    await writeHabits(habits);
+    await writeHabits(allHabits.filter((habit) => habit.id !== habitId));
     sendJson(response, 204);
     return;
   }
