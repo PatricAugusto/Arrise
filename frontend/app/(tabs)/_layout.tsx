@@ -4,8 +4,8 @@ import { BlurView } from 'expo-blur';
 import { View, Platform } from 'react-native';
 import { useTheme } from '@/lib/theme';
 
-const ANDROID_TAB_BG_DARK = 'rgba(17, 22, 34, 0.92)';
-const ANDROID_TAB_BG_LIGHT = 'rgba(255, 255, 255, 0.92)';
+const ANDROID_TAB_BG_DARK = 'rgba(8, 11, 17, 0.96)';
+const ANDROID_TAB_BG_LIGHT = 'rgba(246, 248, 250, 0.96)';
 
 export default function TabsLayout() {
   const { theme } = useTheme();
@@ -24,18 +24,18 @@ export default function TabsLayout() {
           elevation: 0,
           backgroundColor:
             Platform.OS === 'android' ? (isDark ? ANDROID_TAB_BG_DARK : ANDROID_TAB_BG_LIGHT) : 'transparent',
-          height: 78,
-          paddingTop: 6,
+          height: 74,
+          paddingTop: 5,
         },
         tabBarBackground:
           Platform.OS === 'android'
             ? undefined
             : () => (
-                <View className="flex-1 overflow-hidden border-t border-glass-border/10">
+                <View className="flex-1 overflow-hidden border-t border-aurora-500/15">
                   <BlurView intensity={65} tint={isDark ? 'dark' : 'light'} style={{ flex: 1 }} />
                 </View>
               ),
-        tabBarLabelStyle: { fontFamily: 'Inter_500Medium', fontSize: 11 },
+        tabBarLabelStyle: { fontFamily: 'SpaceMono_400Regular', fontSize: 10 },
       }}
     >
       <Tabs.Screen name="index" options={{ title: 'Hoje', tabBarIcon: ({ color, size }) => <Ionicons name="pulse-outline" size={size} color={color} /> }} />

@@ -14,8 +14,9 @@ module.exports = {
         'glass-border': 'rgb(var(--arrise-glass-border) / <alpha-value>)',
         // Functional grayscale accents for the terminal interface.
         violet: { DEFAULT: '#B8C0CC', 50: '#F3F6FA', 400: '#D5DCE5', 500: '#B8C0CC', 600: '#7B8797' },
-        aurora: { DEFAULT: '#00D9FF', 400: '#5CEBFF', 500: '#00D9FF', 600: '#00A8C6' },
-        ember:  { DEFAULT: '#FF4FD8', 400: '#FF8AE7', 500: '#FF4FD8', 600: '#C91AA5' },
+        aurora: { DEFAULT: '#00E5FF', 400: '#72F3FF', 500: '#00E5FF', 600: '#00A8C6' },
+        ember:  { DEFAULT: '#FF2BD6', 400: '#FF84E8', 500: '#FF2BD6', 600: '#C91AA5' },
+        signal: { DEFAULT: '#D7FF3F', 400: '#E7FF7A', 500: '#D7FF3F', 600: '#9EBF00' },
       },
       fontFamily: {
         display: ['SpaceGrotesk_700Bold'],
@@ -25,7 +26,7 @@ module.exports = {
         'body-semibold': ['Inter_600SemiBold'],
         mono: ['SpaceMono_400Regular'],
       },
-      borderRadius: { glass: '18px' },
+      borderRadius: { glass: '12px' },
     },
   },
   plugins: [],

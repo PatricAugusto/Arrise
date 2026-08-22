@@ -4,25 +4,25 @@
 
 /*
   Arrise — Design Tokens
-  Direção: terminal monocromático com superfícies liquid glass.
+  Direção: Neo Minimal / cyberpunk com superfícies liquid glass.
 */
 
 :root {
   /* Light theme */
-  --arrise-bg: 244 244 242;
-  --arrise-bg-elevated: 255 255 253;
-  --arrise-text: 18 18 18;
-  --arrise-text-dim: 103 103 99;
+  --arrise-bg: 242 245 247;
+  --arrise-bg-elevated: 255 255 255;
+  --arrise-text: 11 15 20;
+  --arrise-text-dim: 75 87 98;
   --arrise-glass: 255 255 255;
   --arrise-glass-border: 18 20 28;
 }
 
 .dark:root {
   /* Dark theme */
-  --arrise-bg: 10 10 10;
-  --arrise-bg-elevated: 19 19 18;
-  --arrise-text: 246 246 241;
-  --arrise-text-dim: 157 157 149;
+  --arrise-bg: 6 8 12;
+  --arrise-bg-elevated: 13 17 24;
+  --arrise-text: 245 248 250;
+  --arrise-text-dim: 157 171 185;
   --arrise-glass: 255 255 255;
   --arrise-glass-border: 255 255 255;
 }

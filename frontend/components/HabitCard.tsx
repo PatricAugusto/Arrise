@@ -95,7 +95,7 @@ export function HabitCard({ habit, onToggle, onDelete, onEdit }: HabitCardProps)
 
       <GestureDetector gesture={pan}>
         <Animated.View style={cardStyle}>
-          <GlassCard>
+          <GlassCard className="border-l-2 border-l-aurora-500/60">
             <Pressable
               onPress={() => onToggle(habit.id)}
               accessibilityRole="checkbox"
@@ -103,7 +103,7 @@ export function HabitCard({ habit, onToggle, onDelete, onEdit }: HabitCardProps)
               accessibilityState={{ checked: habit.completedToday }}
               className="flex-row items-center px-4 py-4 active:opacity-70"
             >
-              <View className={`w-10 h-10 rounded-xl items-center justify-center mr-3 ${colors.iconBg}`}>
+              <View className={`mr-3 h-11 w-11 items-center justify-center rounded-lg ${colors.iconBg}`}>
                 <Ionicons name={habit.icon as any} size={20} color={colors.iconColor} />
               </View>
               <View className="flex-1">

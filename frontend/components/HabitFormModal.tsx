@@ -63,10 +63,10 @@ export function HabitFormModal({ visible, habit, onClose, onSave, onDelete }: Ha
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView className="flex-1 justify-end bg-black/60" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View className="rounded-t-[28px] border-t border-aurora-500/20 bg-bg-elevated px-5 pb-8 pt-4">
+        <View className="rounded-t-2xl border-t-2 border-aurora-500/40 bg-bg-elevated px-5 pb-8 pt-4">
           <View className="mb-5 flex-row items-center justify-between">
             <View>
-              <Text className="font-mono text-[10px] tracking-[2px] text-aurora-500">ARRISE://CONFIG</Text>
+              <Text className="font-mono text-[10px] tracking-[1.5px] text-aurora-500">ARRISE / CONFIG_03</Text>
               <Text className="mt-1 font-display text-2xl text-text">{habit ? 'Editar hábito' : 'Novo hábito'}</Text>
             </View>
             <Pressable onPress={onClose} className="h-10 w-10 items-center justify-center rounded-full border border-glass-border/10" accessibilityRole="button" accessibilityLabel="Fechar">
@@ -83,7 +83,7 @@ export function HabitFormModal({ visible, habit, onClose, onSave, onDelete }: Ha
               placeholderTextColor="#8793A1"
               maxLength={48}
               autoFocus={!habit}
-              className="mb-5 rounded-2xl border border-glass-border/10 bg-bg px-4 py-4 font-body text-base text-text"
+              className="mb-5 rounded-xl border border-white/15 bg-bg px-4 py-4 font-body text-base text-text"
               returnKeyType="done"
               onSubmitEditing={handleSave}
               accessibilityLabel="Nome do hábito"

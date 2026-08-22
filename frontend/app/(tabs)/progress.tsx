@@ -36,12 +36,12 @@ export default function ProgressScreen() {
   return (
     <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
       <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 120 }}>
-        <View className="flex-row items-center mb-2">
-          <View className="mr-2 h-2 w-2 rounded-full bg-aurora-500" />
-          <Text className="font-mono text-[10px] tracking-[2px] text-aurora-500">ARRISE://SIGNALS</Text>
+        <View className="mb-2 flex-row items-center">
+          <View className="mr-2 h-1.5 w-1.5 bg-aurora-500" />
+          <Text className="font-mono text-[10px] tracking-[1.5px] text-aurora-500">ARRISE / ANALYTICS_02</Text>
         </View>
-        <Text className="text-text font-display text-3xl mb-1">Seu progresso</Text>
-        <Text className="text-text-dim font-body text-sm mb-5">A consistência deixa um rastro.</Text>
+        <Text className="mb-1 text-text font-display text-[32px] leading-9">Seu progresso</Text>
+        <Text className="mb-5 font-body text-sm text-text-dim">A consistência deixa um rastro.</Text>
 
         <View className="flex-row gap-3 mb-4">
           <GlassCard className="flex-1 p-4">
@@ -62,7 +62,7 @@ export default function ProgressScreen() {
           </GlassCard>
         </View>
 
-        <Text className="text-text font-body-semibold text-sm mb-3">Progresso semanal</Text>
+        <View className="mb-3 flex-row items-center justify-between"><Text className="font-body-semibold text-sm text-text">$ progresso semanal</Text><Text className="font-mono text-[10px] text-text-dim">LIVE</Text></View>
 
         {habits.map((habit) => (
           <GlassCard key={habit.id} className="mb-3 flex-row items-center p-4">
