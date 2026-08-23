@@ -34,10 +34,22 @@ async function ensureDatabase() {
       streak INTEGER NOT NULL DEFAULT 0 CHECK(streak >= 0),
       completed_today INTEGER NOT NULL DEFAULT 0 CHECK(completed_today IN (0, 1)),
       week_progress REAL NOT NULL DEFAULT 0 CHECK(week_progress BETWEEN 0 AND 1),
+      sort_order INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
     CREATE INDEX IF NOT EXISTS habits_user_id_idx ON habits(user_id);
   `);
+
+  const habitColumns = database.prepare('PRAGMA table_info(habits)').all();
+  if (!habitColumns.some((column) => column.name === 'sort_order')) {
+    database.exec('ALTER TABLE habits ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0');
+  }
+  const users = database.prepare('SELECT DISTINCT user_id FROM habits').all();
+  const setOrder = database.prepare('UPDATE habits SET sort_order = ? WHERE id = ? AND user_id = ?');
+  users.forEach(({ user_id }) => {
+    const userHabits = database.prepare('SELECT id FROM habits WHERE user_id = ? ORDER BY created_at, rowid').all(user_id);
+    userHabits.forEach((habit, index) => setOrder.run(index, habit.id, user_id));
+  });
 
   const userCount = database.prepare('SELECT COUNT(*) AS count FROM users').get().count;
   if (userCount === 0) {
@@ -212,7 +224,19 @@ async function handleRequest(request, response, database) {
   }
 
   const habitId = segments[2];
-  const habits = database.prepare('SELECT * FROM habits WHERE user_id = ? ORDER BY created_at, rowid').all(currentUser.id).map(habitFromRow);
+  const habits = database.prepare('SELECT * FROM habits WHERE user_id = ? ORDER BY sort_order, created_at, rowid').all(currentUser.id).map(habitFromRow);
+
+  if (request.method === 'POST' && segments.length === 3 && habitId === 'reorder') {
+    const input = await readBody(request);
+    if (!Array.isArray(input.ids) || input.ids.length !== habits.length || new Set(input.ids).size !== habits.length || input.ids.some((id) => !habits.some((habit) => habit.id === id))) {
+      sendError(response, 400, 'ids must contain all user habits exactly once');
+      return;
+    }
+    const updateOrder = database.prepare('UPDATE habits SET sort_order = ? WHERE id = ? AND user_id = ?');
+    database.transaction((ids) => ids.forEach((id, index) => updateOrder.run(index, id, currentUser.id)))(input.ids);
+    sendJson(response, 200, database.prepare('SELECT * FROM habits WHERE user_id = ? ORDER BY sort_order, created_at, rowid').all(currentUser.id).map(habitFromRow));
+    return;
+  }
 
   if (request.method === 'GET' && segments.length === 2) {
     sendJson(response, 200, habits);
@@ -237,7 +261,8 @@ async function handleRequest(request, response, database) {
       completedToday: false,
       weekProgress: 0,
     };
-    database.prepare('INSERT INTO habits (id, user_id, title, icon, color, streak, completed_today, week_progress) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(habit.id, habit.userId, habit.title, habit.icon, habit.color, habit.streak, 0, habit.weekProgress);
+    const nextOrder = habits.length;
+    database.prepare('INSERT INTO habits (id, user_id, title, icon, color, streak, completed_today, week_progress, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run(habit.id, habit.userId, habit.title, habit.icon, habit.color, habit.streak, 0, habit.weekProgress, nextOrder);
     sendJson(response, 201, habit);
     return;
   }

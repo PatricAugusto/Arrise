@@ -147,4 +147,21 @@ export async function deleteHabit(id: string) {
   await AsyncStorage.setItem(LOCAL_HABITS_KEY, JSON.stringify(habits.filter((item) => item.id !== id)));
 }
 
+export async function reorderHabits(ids: string[]) {
+  try {
+    const habits = await request<Habit[]>('/habits/reorder', {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    });
+    await AsyncStorage.setItem(LOCAL_HABITS_KEY, JSON.stringify(habits));
+    return habits;
+  } catch {
+    const habits = await getCachedHabits();
+    const byId = new Map(habits.map((habit) => [habit.id, habit]));
+    const reordered = ids.map((id) => byId.get(id)).filter((habit): habit is Habit => Boolean(habit));
+    await AsyncStorage.setItem(LOCAL_HABITS_KEY, JSON.stringify(reordered));
+    return reordered;
+  }
+}
+
 export { API_URL };

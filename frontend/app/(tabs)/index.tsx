@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { View, Text, FlatList, Pressable } from "react-native";
+import { View, Text, Pressable } from "react-native";
+import DraggableFlatList, { RenderItemParams } from "react-native-draggable-flatlist";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/lib/theme";
@@ -9,7 +10,7 @@ import { HabitCard } from "@/components/HabitCard";
 import { ProgressRing } from "@/components/ProgressRing";
 import { HabitFormModal } from "@/components/HabitFormModal";
 import { CyberPulse } from "@/components/CyberPulse";
-import { createHabit, deleteHabit, getHabits, updateHabit } from "@/lib/api";
+import { createHabit, deleteHabit, getHabits, reorderHabits, updateHabit } from "@/lib/api";
 
 export default function TodayScreen() {
   const { theme, toggleAt } = useTheme();
@@ -60,6 +61,17 @@ export default function TodayScreen() {
     void handleDelete(habit.id);
     setFormVisible(false);
     setEditingHabit(null);
+  };
+
+  const handleReorder = async ({ data }: { data: Habit[] }) => {
+    const previousHabits = habits;
+    setHabits(data);
+    try {
+      setHabits(await reorderHabits(data.map((habit) => habit.id)));
+    } catch {
+      setHabits(previousHabits);
+      setApiError("Não foi possível salvar a nova ordem.");
+    }
   };
 
   const openCreateForm = () => {
@@ -140,7 +152,7 @@ export default function TodayScreen() {
         </Pressable>
       </View>
 
-      <FlatList
+      <DraggableFlatList
         data={habits}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{
@@ -148,15 +160,20 @@ export default function TodayScreen() {
           paddingTop: 8,
           paddingBottom: 120,
         }}
-        renderItem={({ item, index }) => (
-          <HabitCard
-            habit={item}
-            entranceDelay={Math.min(index * 70, 280)}
-            onToggle={handleToggle}
-            onDelete={handleDelete}
-            onEdit={openEditForm}
-          />
-        )}
+        onDragEnd={handleReorder}
+        renderItem={({ item, getIndex, drag }: RenderItemParams<Habit>) => {
+          const index = getIndex() ?? 0;
+          return (
+            <HabitCard
+              habit={item}
+              entranceDelay={Math.min(index * 70, 280)}
+              onToggle={handleToggle}
+              onDelete={handleDelete}
+              onEdit={openEditForm}
+              onDrag={drag}
+            />
+          );
+        }}
         ListEmptyComponent={
           <View className="items-center mt-10">
             <Text className="text-text-dim font-body text-center">

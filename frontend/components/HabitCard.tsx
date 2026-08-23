@@ -23,6 +23,7 @@ interface HabitCardProps {
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (habit: Habit) => void;
+  onDrag: () => void;
   entranceDelay?: number;
 }
 
@@ -35,7 +36,7 @@ const COLOR_STYLES: Record<HabitColor, { iconBg: string; iconColor: string; ring
 const SWIPE_THRESHOLD = 88;
 const MAX_SWIPE = 120;
 
-export function HabitCard({ habit, onToggle, onDelete, onEdit, entranceDelay = 0 }: HabitCardProps) {
+export function HabitCard({ habit, onToggle, onDelete, onEdit, onDrag, entranceDelay = 0 }: HabitCardProps) {
   const colors = COLOR_STYLES[habit.color];
 
   const translateX = useSharedValue(0);
@@ -105,8 +106,10 @@ export function HabitCard({ habit, onToggle, onDelete, onEdit, entranceDelay = 0
           <GlassCard className="border-l-2 border-l-aurora-500/60">
             <Pressable
               onPress={() => onToggle(habit.id)}
+              onLongPress={onDrag}
               accessibilityRole="checkbox"
               accessibilityLabel={`${habit.title}, ${habit.completedToday ? 'concluído' : 'pendente'}`}
+              accessibilityHint="Pressione e segure para mover"
               accessibilityState={{ checked: habit.completedToday }}
               className="flex-row items-center px-4 py-4 active:opacity-70"
             >
@@ -133,6 +136,7 @@ export function HabitCard({ habit, onToggle, onDelete, onEdit, entranceDelay = 0
               <Pressable onPress={() => onEdit(habit)} hitSlop={10} className="ml-3" accessibilityLabel={`Editar ${habit.title}`}>
                 <Ionicons name="ellipsis-horizontal" size={20} color="#8793A1" />
               </Pressable>
+              <Ionicons name="reorder-three-outline" size={22} color="#8793A1" />
             </Pressable>
           </GlassCard>
         </Animated.View>
