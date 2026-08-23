@@ -42,7 +42,7 @@ export function HabitCard({ habit, onToggle, onDelete, onEdit, onDrag, entranceD
   const translateX = useSharedValue(0);
   const checkScale = useSharedValue(1);
   const cardScale = useSharedValue(1);
-  const entryProgress = useSharedValue(0);
+  const entryProgress = useSharedValue(1);
 
   useEffect(() => {
     entryProgress.value = withDelay(entranceDelay, withTiming(1, { duration: 420, easing: Easing.out(Easing.cubic) }));
@@ -102,7 +102,7 @@ export function HabitCard({ habit, onToggle, onDelete, onEdit, onDrag, entranceD
       </View>
 
       <GestureDetector gesture={pan}>
-        <Animated.View style={cardStyle}>
+        <Animated.View style={cardStyle} className="rounded-glass bg-bg-elevated/95">
           <GlassCard className="border-l-2 border-l-aurora-500/60">
             <Pressable
               onPress={() => onToggle(habit.id)}

@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { View, Text, Pressable } from "react-native";
-import DraggableFlatList, { RenderItemParams } from "react-native-draggable-flatlist";
+import { useCallback, useMemo, useState } from "react";
+import { View, Text, FlatList, Pressable } from "react-native";
+import { useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/lib/theme";
@@ -10,7 +10,8 @@ import { HabitCard } from "@/components/HabitCard";
 import { ProgressRing } from "@/components/ProgressRing";
 import { HabitFormModal } from "@/components/HabitFormModal";
 import { CyberPulse } from "@/components/CyberPulse";
-import { createHabit, deleteHabit, getHabits, reorderHabits, updateHabit } from "@/lib/api";
+import { BinaryCodeAnimation } from "@/components/BinaryCodeAnimation";
+import { createHabit, deleteHabit, getHabits, updateHabit } from "@/lib/api";
 
 export default function TodayScreen() {
   const { theme, toggleAt } = useTheme();
@@ -33,9 +34,11 @@ export default function TodayScreen() {
     }
   }, []);
 
-  useEffect(() => {
-    loadHabits();
-  }, [loadHabits]);
+  useFocusEffect(
+    useCallback(() => {
+      void loadHabits();
+    }, [loadHabits]),
+  );
 
   const handleToggle = async (id: string) => {
     const habit = habits.find((item) => item.id === id);
@@ -61,17 +64,6 @@ export default function TodayScreen() {
     void handleDelete(habit.id);
     setFormVisible(false);
     setEditingHabit(null);
-  };
-
-  const handleReorder = async ({ data }: { data: Habit[] }) => {
-    const previousHabits = habits;
-    setHabits(data);
-    try {
-      setHabits(await reorderHabits(data.map((habit) => habit.id)));
-    } catch {
-      setHabits(previousHabits);
-      setApiError("Não foi possível salvar a nova ordem.");
-    }
   };
 
   const openCreateForm = () => {
@@ -109,72 +101,75 @@ export default function TodayScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-bg" edges={["top"]}>
-      <View className="pointer-events-none absolute -right-20 top-20 h-56 w-56 rounded-full border border-aurora-500/10" />
-      <View className="px-5 pb-4 pt-6 flex-row items-center justify-between">
-        <View>
-          <View className="flex-row items-center mb-2">
-            <View className="mr-2"><CyberPulse color="#00E5FF" size={6} /></View>
-            <Text className="font-mono text-[10px] tracking-[1.5px] text-aurora-500">ARRISE / DAILY_01</Text>
+      <View className="flex-1">
+        <View pointerEvents="none" style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, zIndex: 0, elevation: 0 }}>
+          <BinaryCodeAnimation />
+        </View>
+        <View className="flex-1" style={{ zIndex: 1, elevation: 1 }}>
+        <View className="px-5 pb-4 pt-6 flex-row items-center justify-between">
+          <View>
+            <View className="flex-row items-center mb-2">
+              <View className="mr-2"><CyberPulse color="#00E5FF" size={6} /></View>
+              <Text className="font-mono text-[10px] tracking-[1.5px] text-aurora-500">ARRISE / DAILY_01</Text>
+            </View>
+            <Text className="text-text-dim font-body text-sm">Bom dia, {user?.name ?? "aí"}</Text>
+            <Text className="text-text font-display text-[32px] leading-9">Seu ritmo hoje</Text>
           </View>
-          <Text className="text-text-dim font-body text-sm">Bom dia, {user?.name ?? "aí"}</Text>
-          <Text className="text-text font-display text-[32px] leading-9">Seu ritmo hoje</Text>
+          <View className="flex-row items-center gap-2">
+            <Pressable onPress={(e) => toggleAt(e.nativeEvent.pageX, e.nativeEvent.pageY)} hitSlop={12} accessibilityRole="button" accessibilityLabel="Alternar tema" className="h-10 w-10 items-center justify-center rounded-lg border border-white/15 bg-bg-elevated/70">
+              <Ionicons name={theme === "dark" ? "moon-outline" : "sunny-outline"} size={18} color={theme === "dark" ? "#F4F4EF" : "#676761"} />
+            </Pressable>
+            <Pressable onPress={() => void signOut()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Sair da conta" className="h-10 w-10 items-center justify-center rounded-lg border border-white/15 bg-bg-elevated/70">
+              <Ionicons name="log-out-outline" size={18} color="#FF4FD8" />
+            </Pressable>
+          </View>
         </View>
-        <View className="flex-row items-center gap-2">
-          <Pressable onPress={(e) => toggleAt(e.nativeEvent.pageX, e.nativeEvent.pageY)} hitSlop={12} accessibilityRole="button" accessibilityLabel="Alternar tema" className="h-10 w-10 items-center justify-center rounded-lg border border-white/15 bg-bg-elevated/70">
-            <Ionicons name={theme === "dark" ? "moon-outline" : "sunny-outline"} size={18} color={theme === "dark" ? "#F4F4EF" : "#676761"} />
-          </Pressable>
-          <Pressable onPress={() => void signOut()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Sair da conta" className="h-10 w-10 items-center justify-center rounded-lg border border-white/15 bg-bg-elevated/70">
-            <Ionicons name="log-out-outline" size={18} color="#FF4FD8" />
-          </Pressable>
-        </View>
-      </View>
 
-      <View className="mx-5 mb-5 mt-2 flex-row items-center justify-between rounded-glass border border-aurora-500/20 bg-white/[0.06] px-5 py-5">
-        <View>
-          <View className="mb-2 flex-row items-center"><View className="mr-2"><CyberPulse color="#D7FF3F" size={6} /></View><Text className="font-mono text-[10px] tracking-[1.5px] text-text-dim">SYS.STATUS // ONLINE</Text></View>
-          <Text className="text-text font-display text-2xl mt-2">Em movimento</Text>
-          <Text className="mt-1 font-body text-xs text-text-dim">Pequenos sinais, todos os dias.</Text>
-        </View>
-        <ProgressRing
-          progress={percentage}
-          size={92}
-          strokeWidth={7}
-          label={`${Math.round(percentage * 100)}%`}
-          sublabel={`${completedCount}/${habits.length} hoje`}
-        />
-      </View>
-
-      <View className="px-5 flex-row items-center justify-between mb-2">
-        <Text className="font-body-semibold text-sm text-text">$ próximos sinais</Text>
-        <Pressable onPress={openCreateForm} className="flex-row items-center" accessibilityRole="button" accessibilityLabel="Adicionar hábito">
-          <Ionicons name="add" size={16} color="#F4F4EF" />
-          <Text className="ml-1 font-body-medium text-xs text-aurora-500">novo --init</Text>
-        </Pressable>
-      </View>
-
-      <DraggableFlatList
+          <FlatList
         data={habits}
         keyExtractor={(item) => item.id}
+        style={{ flex: 1 }}
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingTop: 8,
+          paddingTop: 4,
           paddingBottom: 120,
         }}
-        onDragEnd={handleReorder}
-        renderItem={({ item, getIndex, drag }: RenderItemParams<Habit>) => {
-          const index = getIndex() ?? 0;
-          return (
-            <HabitCard
-              habit={item}
-              entranceDelay={Math.min(index * 70, 280)}
-              onToggle={handleToggle}
-              onDelete={handleDelete}
-              onEdit={openEditForm}
-              onDrag={drag}
-            />
-          );
-        }}
-        ListEmptyComponent={
+        ListHeaderComponent={
+          <View>
+            <View className="mb-5 mt-2 flex-row items-center justify-between rounded-glass border border-aurora-500/20 bg-white/[0.06] px-5 py-5">
+              <View>
+                <View className="mb-2 flex-row items-center"><View className="mr-2"><CyberPulse color="#D7FF3F" size={6} /></View><Text className="font-mono text-[10px] tracking-[1.5px] text-text-dim">SYS.STATUS // ONLINE</Text></View>
+                <Text className="text-text font-display text-2xl mt-2">Em movimento</Text>
+                <Text className="mt-1 font-body text-xs text-text-dim">Pequenos sinais, todos os dias.</Text>
+              </View>
+              <ProgressRing
+                progress={percentage}
+                size={92}
+                strokeWidth={7}
+                label={`${Math.round(percentage * 100)}%`}
+                sublabel={`${completedCount}/${habits.length} hoje`}
+              />
+            </View>
+            <View className="relative z-20 mb-2 flex-row items-center justify-between" style={{ zIndex: 20, elevation: 20 }}>
+              <Text className="font-body-semibold text-sm text-text">$ próximos sinais</Text>
+              <Pressable onPress={openCreateForm} className="flex-row items-center" accessibilityRole="button" accessibilityLabel="Adicionar hábito">
+                <Ionicons name="add" size={16} color="#F4F4EF" />
+                <Text className="ml-1 font-body-medium text-xs text-aurora-500">novo --init</Text>
+              </Pressable>
+            </View>
+          </View>
+        }
+        renderItem={({ item, index }) => (
+          <HabitCard
+            habit={item}
+            entranceDelay={Math.min(index * 70, 280)}
+            onToggle={handleToggle}
+            onDelete={handleDelete}
+            onEdit={openEditForm}
+            onDrag={() => undefined}
+          />
+        )}
+          ListEmptyComponent={
           <View className="items-center mt-10">
             <Text className="text-text-dim font-body text-center">
               {isLoading ? "Sincronizando hábitos..." : apiError ?? "Nenhum hábito por aqui. Adicione um novo sinal."}
@@ -185,12 +180,15 @@ export default function TodayScreen() {
               </Pressable>
             )}
           </View>
-        }
-      />
+          }
+          />
+        </View>
+      </View>
 
       <Pressable
         onPress={openCreateForm}
-        className="absolute bottom-24 right-5 h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-aurora-500 shadow-lg"
+        className="absolute bottom-24 right-5 z-30 h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-aurora-500 shadow-lg"
+        style={{ zIndex: 30, elevation: 30 }}
         accessibilityRole="button"
         accessibilityLabel="Adicionar hábito"
       >

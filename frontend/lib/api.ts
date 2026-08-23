@@ -48,11 +48,13 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
 export function getHabits() {
   return request<Habit[]>('/habits').then(async (habits) => {
+    if (!Array.isArray(habits)) throw new Error('Resposta inválida ao carregar tarefas.');
     await AsyncStorage.setItem(LOCAL_HABITS_KEY, JSON.stringify(habits));
     return habits;
-  }).catch(async () => {
+  }).catch(async (error) => {
     const stored = await AsyncStorage.getItem(LOCAL_HABITS_KEY);
-    return stored ? JSON.parse(stored) as Habit[] : [];
+    if (stored) return JSON.parse(stored) as Habit[];
+    throw error;
   });
 }
 
@@ -99,7 +101,8 @@ export async function createHabit(input: HabitInput) {
     });
     await AsyncStorage.setItem(LOCAL_HABITS_KEY, JSON.stringify(await getCachedHabits()));
     return habit;
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && /401|403|Faça login/i.test(error.message)) throw error;
     const habits = await getCachedHabits();
     const habit: Habit = {
       ...input,
@@ -127,7 +130,8 @@ export async function updateHabit(id: string, input: HabitUpdate) {
     const habits = await getCachedHabits();
     await AsyncStorage.setItem(LOCAL_HABITS_KEY, JSON.stringify(habits.map((item) => item.id === id ? habit : item)));
     return habit;
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && /401|403|Faça login/i.test(error.message)) throw error;
     const habits = await getCachedHabits();
     const current = habits.find((item) => item.id === id);
     if (!current) throw new Error('Habit not found');

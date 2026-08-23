@@ -10,6 +10,22 @@ npm run backend:dev
 
 A API inicia em `http://localhost:3000`.
 
+## Executar o app com Expo Go
+
+Em outro terminal, dentro de `frontend`, execute:
+
+```bash
+npm start
+```
+
+Para garantir que o QR code use o IP da rede local, execute:
+
+```bash
+npm run start:lan
+```
+
+O telefone e o computador precisam estar na mesma rede Wi-Fi. Escaneie sempre o QR code gerado pela execução atual; QR codes antigos de outra porta ou do modo tunnel deixam de funcionar quando o packager é encerrado.
+
 O backend usa exclusivamente a porta `3000`. Se ela já estiver ocupada, encerre a instância anterior antes de iniciar novamente.
 
 ## Rotas
