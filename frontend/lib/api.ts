@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CalendarData, Habit, HabitColor } from '@/lib/types';
 
-const configuredApiUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
+const configuredApiUrl = process.env.EXPO_PUBLIC_API_URL?.trim() || Constants.expoConfig?.extra?.apiUrl;
 const expoHost = Constants.expoConfig?.hostUri?.split(':')[0];
 const isAndroidEmulator = Platform.OS === 'android' && !Constants.isDevice;
 const apiHost = expoHost || (isAndroidEmulator ? '10.0.2.2' : 'localhost');

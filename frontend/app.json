@@ -2,14 +2,18 @@
   "expo": {
     "name": "Arrise",
     "slug": "arrise",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "scheme": "arrise",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "ios": { "supportsTablet": true, "bundleIdentifier": "com.arrise.app" },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.arrise.app"
+    },
     "android": {
+      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#06080C",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -19,11 +23,31 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.arrise.app"
     },
-    "web": { "favicon": "./assets/favicon.png", "bundler": "metro" },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
     "plugins": [
       "expo-router",
-        ["expo-splash-screen", { "backgroundColor": "#06080C", "image": "./assets/splash-icon.png", "imageWidth": 120 }]
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#06080C",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 120
+        }
+      ]
     ],
-    "experiments": { "typedRoutes": true }
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "apiUrl": "http://192.168.0.111:3000/api",
+      "eas": {
+        "projectId": "cb2ba779-b639-4cdc-8ff9-b951d073cfa3"
+      }
+    },
+    "owner": "spaceboy0110"
   }
 }
