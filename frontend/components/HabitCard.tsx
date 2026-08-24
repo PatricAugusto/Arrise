@@ -25,6 +25,7 @@ interface HabitCardProps {
   onDelete: (id: string) => void;
   onEdit: (habit: Habit) => void;
   onDrag: () => void;
+  isActive?: boolean;
   entranceDelay?: number;
 }
 
@@ -37,7 +38,7 @@ const COLOR_STYLES: Record<HabitColor, { iconBg: string; iconColor: string; ring
 const SWIPE_THRESHOLD = 88;
 const MAX_SWIPE = 120;
 
-export function HabitCard({ habit, onToggle, onDelete, onEdit, onDrag, entranceDelay = 0 }: HabitCardProps) {
+export function HabitCard({ habit, onToggle, onDelete, onEdit, onDrag, isActive = false, entranceDelay = 0 }: HabitCardProps) {
   const colors = COLOR_STYLES[habit.color];
   const { theme } = useTheme();
   const mutedIconColor = theme === 'dark' ? '#8793A1' : '#52606D';
@@ -106,11 +107,12 @@ export function HabitCard({ habit, onToggle, onDelete, onEdit, onDrag, entranceD
       </View>
 
       <GestureDetector gesture={pan}>
-        <Animated.View style={cardStyle} className="rounded-glass bg-bg-elevated/95">
+        <Animated.View style={cardStyle} className={`rounded-glass bg-bg-elevated/95 ${isActive ? 'opacity-80' : ''}`}>
           <GlassCard className="border-l-2 border-l-aurora-500/60">
             <Pressable
               onPress={() => onToggle(habit.id)}
               onLongPress={onDrag}
+              delayLongPress={180}
               accessibilityRole="checkbox"
               accessibilityLabel={`${habit.title}, ${habit.completedToday ? 'concluído' : 'pendente'}`}
               accessibilityHint="Pressione e segure para mover"

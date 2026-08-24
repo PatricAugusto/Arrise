@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
-import { View, Text, FlatList, Pressable } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { useFocusEffect } from "expo-router";
+import DraggableFlatList, { RenderItemParams } from "react-native-draggable-flatlist";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/lib/theme";
@@ -11,7 +12,7 @@ import { ProgressRing } from "@/components/ProgressRing";
 import { HabitFormModal } from "@/components/HabitFormModal";
 import { CyberPulse } from "@/components/CyberPulse";
 import { BinaryCodeAnimation } from "@/components/BinaryCodeAnimation";
-import { createHabit, deleteHabit, getHabits, updateHabit } from "@/lib/api";
+import { createHabit, deleteHabit, getHabits, reorderHabits, updateHabit } from "@/lib/api";
 
 export default function TodayScreen() {
   const { theme, toggleAt } = useTheme();
@@ -57,6 +58,17 @@ export default function TodayScreen() {
       setHabits((prev) => prev.filter((habit) => habit.id !== id));
     } catch {
       setApiError("Não foi possível excluir este hábito.");
+    }
+  };
+
+  const handleDragEnd = async ({ data }: { data: Habit[] }) => {
+    setHabits(data);
+    try {
+      const savedHabits = await reorderHabits(data.map((habit) => habit.id));
+      setHabits(savedHabits);
+    } catch {
+      setApiError("Não foi possível salvar a ordem dos hábitos.");
+      void loadHabits();
     }
   };
 
@@ -125,10 +137,13 @@ export default function TodayScreen() {
           </View>
         </View>
 
-          <FlatList
+          <DraggableFlatList
         data={habits}
         keyExtractor={(item) => item.id}
-        style={{ flex: 1 }}
+        style={{ flex: 1, zIndex: 2, elevation: 2 }}
+        containerStyle={{ flex: 1 }}
+        activationDistance={12}
+        onDragEnd={handleDragEnd}
         contentContainerStyle={{
           paddingHorizontal: 20,
           paddingTop: 4,
@@ -159,14 +174,15 @@ export default function TodayScreen() {
             </View>
           </View>
         }
-        renderItem={({ item, index }) => (
+        renderItem={({ item, drag, isActive }: RenderItemParams<Habit>) => (
           <HabitCard
             habit={item}
-            entranceDelay={Math.min(index * 70, 280)}
+            entranceDelay={Math.min(habits.indexOf(item) * 70, 280)}
             onToggle={handleToggle}
             onDelete={handleDelete}
             onEdit={openEditForm}
-            onDrag={() => undefined}
+            onDrag={drag}
+            isActive={isActive}
           />
         )}
           ListEmptyComponent={
