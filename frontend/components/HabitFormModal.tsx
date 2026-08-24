@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Habit, HabitColor } from '@/lib/types';
+import { useTheme } from '@/lib/theme';
 
 interface HabitFormModalProps {
   visible: boolean;
@@ -25,6 +26,9 @@ export function HabitFormModal({ visible, habit, onClose, onSave, onDelete }: Ha
   const [icon, setIcon] = useState(ICONS[0]);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const { theme } = useTheme();
+  const mutedIconColor = theme === 'dark' ? '#8793A1' : '#52606D';
+  const selectedIconColor = theme === 'dark' ? '#F4F4EF' : '#087F8C';
 
   useEffect(() => {
     if (!visible) return;
@@ -66,11 +70,11 @@ export function HabitFormModal({ visible, habit, onClose, onSave, onDelete }: Ha
         <View className="rounded-t-2xl border-t-2 border-aurora-500/40 bg-bg-elevated px-5 pb-8 pt-4">
           <View className="mb-5 flex-row items-center justify-between">
             <View>
-              <Text className="font-mono text-[10px] tracking-[1.5px] text-aurora-500">ARRISE / CONFIG_03</Text>
+              <Text className="font-mono text-[10px] tracking-[1.5px] text-aurora-600">ARRISE / CONFIG_03</Text>
               <Text className="mt-1 font-display text-2xl text-text">{habit ? 'Editar hábito' : 'Novo hábito'}</Text>
             </View>
             <Pressable onPress={onClose} className="h-10 w-10 items-center justify-center rounded-full border border-glass-border/10" accessibilityRole="button" accessibilityLabel="Fechar">
-              <Ionicons name="close" size={20} color="#8793A1" />
+              <Ionicons name="close" size={20} color={mutedIconColor} />
             </Pressable>
           </View>
 
@@ -80,10 +84,10 @@ export function HabitFormModal({ visible, habit, onClose, onSave, onDelete }: Ha
               value={title}
               onChangeText={setTitle}
               placeholder="Ex.: Caminhar 20 minutos"
-              placeholderTextColor="#8793A1"
+              placeholderTextColor="#52606D"
               maxLength={48}
               autoFocus={!habit}
-              className="mb-5 rounded-xl border border-white/15 bg-bg px-4 py-4 font-body text-base text-text"
+              className="mb-5 rounded-xl border border-glass-border/20 bg-bg px-4 py-4 font-body text-base text-text"
               returnKeyType="done"
               onSubmitEditing={handleSave}
               accessibilityLabel="Nome do hábito"
@@ -100,7 +104,7 @@ export function HabitFormModal({ visible, habit, onClose, onSave, onDelete }: Ha
                   className={`h-11 w-11 items-center justify-center rounded-xl border ${icon === item ? 'border-aurora-500 bg-aurora-500/10' : 'border-glass-border/10 bg-bg'}`}
                   accessibilityLabel={`Selecionar ícone ${item}`}
                 >
-                  <Ionicons name={item as any} size={19} color={icon === item ? '#F4F4EF' : '#777770'} />
+                  <Ionicons name={item as any} size={19} color={icon === item ? selectedIconColor : mutedIconColor} />
                 </Pressable>
               ))}
             </View>
@@ -138,7 +142,7 @@ export function HabitFormModal({ visible, habit, onClose, onSave, onDelete }: Ha
 
             {habit && (
               <Pressable onPress={handleDelete} className="mt-3 flex-row items-center justify-center py-3" accessibilityLabel="Excluir hábito">
-                <Ionicons name="trash-outline" size={16} color="#8C8C84" />
+                <Ionicons name="trash-outline" size={16} color={mutedIconColor} />
                 <Text className="ml-2 font-body-medium text-xs text-ember-500">Excluir hábito</Text>
               </Pressable>
             )}

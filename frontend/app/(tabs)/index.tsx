@@ -110,16 +110,16 @@ export default function TodayScreen() {
           <View>
             <View className="flex-row items-center mb-2">
               <View className="mr-2"><CyberPulse color="#00E5FF" size={6} /></View>
-              <Text className="font-mono text-[10px] tracking-[1.5px] text-aurora-500">ARRISE / DAILY_01</Text>
+              <Text className="font-mono text-[10px] tracking-[1.5px] text-aurora-600">ARRISE / DAILY_01</Text>
             </View>
             <Text className="text-text-dim font-body text-sm">Bom dia, {user?.name ?? "aí"}</Text>
             <Text className="text-text font-display text-[32px] leading-9">Seu ritmo hoje</Text>
           </View>
           <View className="flex-row items-center gap-2">
-            <Pressable onPress={(e) => toggleAt(e.nativeEvent.pageX, e.nativeEvent.pageY)} hitSlop={12} accessibilityRole="button" accessibilityLabel="Alternar tema" className="h-10 w-10 items-center justify-center rounded-lg border border-white/15 bg-bg-elevated/70">
+            <Pressable onPress={(e) => toggleAt(e.nativeEvent.pageX, e.nativeEvent.pageY)} hitSlop={12} accessibilityRole="button" accessibilityLabel="Alternar tema" className="h-10 w-10 items-center justify-center rounded-lg border border-glass-border/15 bg-bg-elevated">
               <Ionicons name={theme === "dark" ? "moon-outline" : "sunny-outline"} size={18} color={theme === "dark" ? "#F4F4EF" : "#676761"} />
             </Pressable>
-            <Pressable onPress={() => void signOut()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Sair da conta" className="h-10 w-10 items-center justify-center rounded-lg border border-white/15 bg-bg-elevated/70">
+            <Pressable onPress={() => void signOut()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Sair da conta" className="h-10 w-10 items-center justify-center rounded-lg border border-glass-border/15 bg-bg-elevated">
               <Ionicons name="log-out-outline" size={18} color="#FF4FD8" />
             </Pressable>
           </View>
@@ -136,7 +136,7 @@ export default function TodayScreen() {
         }}
         ListHeaderComponent={
           <View>
-            <View className="mb-5 mt-2 flex-row items-center justify-between rounded-glass border border-aurora-500/20 bg-white/[0.06] px-5 py-5">
+            <View className="mb-5 mt-2 flex-row items-center justify-between rounded-glass border border-aurora-500/30 bg-bg-elevated px-5 py-5">
               <View>
                 <View className="mb-2 flex-row items-center"><View className="mr-2"><CyberPulse color="#D7FF3F" size={6} /></View><Text className="font-mono text-[10px] tracking-[1.5px] text-text-dim">SYS.STATUS // ONLINE</Text></View>
                 <Text className="text-text font-display text-2xl mt-2">Em movimento</Text>
@@ -153,8 +153,8 @@ export default function TodayScreen() {
             <View className="relative z-20 mb-2 flex-row items-center justify-between" style={{ zIndex: 20, elevation: 20 }}>
               <Text className="font-body-semibold text-sm text-text">$ próximos sinais</Text>
               <Pressable onPress={openCreateForm} className="flex-row items-center" accessibilityRole="button" accessibilityLabel="Adicionar hábito">
-                <Ionicons name="add" size={16} color="#F4F4EF" />
-                <Text className="ml-1 font-body-medium text-xs text-aurora-500">novo --init</Text>
+                <Ionicons name="add" size={16} color={theme === "dark" ? "#F4F4EF" : "#12343B"} />
+                <Text className="ml-1 font-body-medium text-xs text-aurora-600">novo --init</Text>
               </Pressable>
             </View>
           </View>
@@ -175,8 +175,8 @@ export default function TodayScreen() {
               {isLoading ? "Sincronizando hábitos..." : apiError ?? "Nenhum hábito por aqui. Adicione um novo sinal."}
             </Text>
             {!!apiError && !isLoading && (
-              <Pressable onPress={loadHabits} className="mt-4 rounded-xl border border-white/20 px-4 py-2">
-                <Text className="font-body-medium text-xs text-aurora-500">retry --sync</Text>
+              <Pressable onPress={loadHabits} className="mt-4 rounded-xl border border-glass-border/20 px-4 py-2">
+                <Text className="font-body-medium text-xs text-aurora-600">retry --sync</Text>
               </Pressable>
             )}
           </View>
@@ -187,7 +187,7 @@ export default function TodayScreen() {
 
       <Pressable
         onPress={openCreateForm}
-        className="absolute bottom-24 right-5 z-30 h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-aurora-500 shadow-lg"
+        className="absolute bottom-24 right-5 z-30 h-14 w-14 items-center justify-center rounded-full border border-glass-border/20 bg-aurora-500 shadow-lg"
         style={{ zIndex: 30, elevation: 30 }}
         accessibilityRole="button"
         accessibilityLabel="Adicionar hábito"

@@ -9,6 +9,7 @@ import { HabitColor } from '@/lib/types';
 import { Habit } from '@/lib/types';
 import { getHabits } from '@/lib/api';
 import { CyberPulse } from '@/components/CyberPulse';
+import { useTheme } from '@/lib/theme';
 
 const RING_COLOR: Record<HabitColor, string> = {
   violet: '#B8C0CC',
@@ -17,6 +18,9 @@ const RING_COLOR: Record<HabitColor, string> = {
 };
 
 export default function ProgressScreen() {
+  const { theme } = useTheme();
+  const mutedIconColor = theme === 'dark' ? '#8C8C84' : '#52606D';
+  const accentIconColor = theme === 'dark' ? '#F4F4EF' : '#12343B';
   const [habits, setHabits] = useState<Habit[]>([]);
   const [apiError, setApiError] = useState(false);
 
@@ -39,7 +43,7 @@ export default function ProgressScreen() {
       <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 120 }}>
         <View className="mb-2 flex-row items-center">
           <View className="mr-2"><CyberPulse color="#00E5FF" size={6} /></View>
-          <Text className="font-mono text-[10px] tracking-[1.5px] text-aurora-500">ARRISE / ANALYTICS_02</Text>
+          <Text className="font-mono text-[10px] tracking-[1.5px] text-aurora-600">ARRISE / ANALYTICS_02</Text>
         </View>
         <Text className="mb-1 text-text font-display text-[32px] leading-9">Seu progresso</Text>
         <Text className="mb-5 font-body text-sm text-text-dim">A consistência deixa um rastro.</Text>
@@ -48,7 +52,7 @@ export default function ProgressScreen() {
           <GlassCard className="flex-1 p-4">
             <View className="flex-row items-center justify-between">
               <Text className="font-mono text-[10px] text-text-dim">TOTAL</Text>
-              <Ionicons name="flame-outline" size={18} color="#8C8C84" />
+              <Ionicons name="flame-outline" size={18} color={mutedIconColor} />
             </View>
             <Text className="font-display text-3xl text-text mt-3">{totalStreak}</Text>
             <Text className="font-body text-text-dim text-xs mt-1">dias somados</Text>
@@ -56,7 +60,7 @@ export default function ProgressScreen() {
           <GlassCard className="flex-1 p-4">
             <View className="flex-row items-center justify-between">
               <Text className="font-mono text-[10px] text-text-dim">RECORD</Text>
-              <Ionicons name="trophy-outline" size={18} color="#F4F4EF" />
+              <Ionicons name="trophy-outline" size={18} color={accentIconColor} />
             </View>
             <Text className="font-display text-3xl text-text mt-3">{bestStreak}</Text>
             <Text className="font-body text-text-dim text-xs mt-1">melhor streak</Text>
@@ -77,7 +81,7 @@ export default function ProgressScreen() {
             <View className="ml-4 flex-1">
               <View className="flex-row items-start justify-between gap-2">
                 <Text className="flex-1 font-body-semibold text-base leading-5 text-text">{habit.title}</Text>
-                <Text className="font-mono text-sm text-aurora-500">{Math.round(habit.weekProgress * 100)}%</Text>
+                <Text className="font-mono text-sm text-aurora-600">{Math.round(habit.weekProgress * 100)}%</Text>
               </View>
               <View className="mt-3 h-2 overflow-hidden rounded-full bg-text-dim/20" accessibilityLabel={`Progresso semanal de ${habit.title}`} accessibilityValue={{ min: 0, max: 100, now: Math.round(habit.weekProgress * 100) }}>
                 <View className="h-full rounded-full bg-aurora-500" style={{ width: `${Math.round(habit.weekProgress * 100)}%` }} />

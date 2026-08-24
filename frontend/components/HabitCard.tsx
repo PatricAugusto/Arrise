@@ -17,6 +17,7 @@ import Animated, {
 import { GlassCard } from './GlassCard';
 import { Habit, HabitColor } from '@/lib/types';
 import { CyberPulse } from './CyberPulse';
+import { useTheme } from '@/lib/theme';
 
 interface HabitCardProps {
   habit: Habit;
@@ -38,6 +39,9 @@ const MAX_SWIPE = 120;
 
 export function HabitCard({ habit, onToggle, onDelete, onEdit, onDrag, entranceDelay = 0 }: HabitCardProps) {
   const colors = COLOR_STYLES[habit.color];
+  const { theme } = useTheme();
+  const mutedIconColor = theme === 'dark' ? '#8793A1' : '#52606D';
+  const actionIconColor = theme === 'dark' ? '#F4F4EF' : '#12343B';
 
   const translateX = useSharedValue(0);
   const checkScale = useSharedValue(1);
@@ -94,10 +98,10 @@ export function HabitCard({ habit, onToggle, onDelete, onEdit, onDrag, entranceD
     <View className="mb-3">
       <View className="absolute inset-0 flex-row items-center justify-between px-6">
         <Animated.View style={completeActionStyle} className="flex-row items-center gap-2">
-          <Ionicons name="checkmark-circle" size={26} color="#F4F4EF" />
+          <Ionicons name="checkmark-circle" size={26} color={actionIconColor} />
         </Animated.View>
         <Animated.View style={deleteActionStyle} className="flex-row items-center gap-2">
-          <Ionicons name="trash" size={22} color="#8C8C84" />
+          <Ionicons name="trash" size={22} color={mutedIconColor} />
         </Animated.View>
       </View>
 
@@ -121,7 +125,7 @@ export function HabitCard({ habit, onToggle, onDelete, onEdit, onDrag, entranceD
                   {habit.title}
                 </Text>
                 <View className="mt-1 flex-row items-center">
-                  {habit.completedToday ? <CyberPulse color="#D7FF3F" size={5} /> : <Ionicons name="flame-outline" size={13} color="#8C8C84" />}
+                  {habit.completedToday ? <CyberPulse color="#D7FF3F" size={5} /> : <Ionicons name="flame-outline" size={13} color={mutedIconColor} />}
                   <Text className="font-mono text-xs text-text-dim ml-1">
                     {habit.streak} {habit.streak === 1 ? 'dia' : 'dias'}
                   </Text>
@@ -134,9 +138,9 @@ export function HabitCard({ habit, onToggle, onDelete, onEdit, onDrag, entranceD
                 {habit.completedToday && <View className={`w-3.5 h-3.5 rounded-full ${colors.dot}`} />}
               </Animated.View>
               <Pressable onPress={() => onEdit(habit)} hitSlop={10} className="ml-3" accessibilityLabel={`Editar ${habit.title}`}>
-                <Ionicons name="ellipsis-horizontal" size={20} color="#8793A1" />
+                <Ionicons name="ellipsis-horizontal" size={20} color={mutedIconColor} />
               </Pressable>
-              <Ionicons name="reorder-three-outline" size={22} color="#8793A1" />
+              <Ionicons name="reorder-three-outline" size={22} color={mutedIconColor} />
             </Pressable>
           </GlassCard>
         </Animated.View>

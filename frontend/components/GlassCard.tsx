@@ -15,7 +15,7 @@ export function GlassCard({ intensity = 30, className = '', style, children, ...
   if (Platform.OS === 'android') {
     return (
       <YStack
-        className={`rounded-glass overflow-hidden border border-white/10 bg-bg-elevated/90 dark:border-white/[0.12] dark:bg-bg-elevated/75 ${className}`}
+        className={`rounded-glass overflow-hidden border border-glass-border/15 bg-bg-elevated/95 dark:border-white/[0.12] dark:bg-bg-elevated/75 ${className}`}
         style={style}
       >
         <View {...rest}>{children}</View>
@@ -28,7 +28,7 @@ export function GlassCard({ intensity = 30, className = '', style, children, ...
         <BlurView
         intensity={intensity}
         tint={isDark ? 'dark' : 'light'}
-        className="border border-white/20 bg-glass/55 dark:border-white/[0.12] dark:bg-glass/[0.07]"
+        className="border border-glass-border/15 bg-glass/90 dark:border-white/[0.12] dark:bg-glass/[0.07]"
       >
         <View {...rest}>{children}</View>
       </BlurView>
