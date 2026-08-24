@@ -37,6 +37,12 @@ async function ensureDatabase() {
       sort_order INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
+    CREATE TABLE IF NOT EXISTS habit_completions (
+      habit_id TEXT NOT NULL REFERENCES habits(id) ON DELETE CASCADE,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      completed_on TEXT NOT NULL,
+      PRIMARY KEY (habit_id, completed_on)
+    );
     CREATE INDEX IF NOT EXISTS habits_user_id_idx ON habits(user_id);
   `);
 
@@ -226,6 +232,17 @@ async function handleRequest(request, response, database) {
   const habitId = segments[2];
   const habits = database.prepare('SELECT * FROM habits WHERE user_id = ? ORDER BY sort_order, created_at, rowid').all(currentUser.id).map(habitFromRow);
 
+  if (request.method === 'GET' && segments.length === 3 && habitId === 'calendar') {
+    const month = url.searchParams.get('month') || '';
+    if (!/^\d{4}-\d{2}$/.test(month)) {
+      sendError(response, 400, 'month must use YYYY-MM format');
+      return;
+    }
+    const completions = database.prepare("SELECT habit_id AS habitId, completed_on AS date FROM habit_completions WHERE user_id = ? AND completed_on LIKE ? ORDER BY completed_on").all(currentUser.id, `${month}-%`);
+    sendJson(response, 200, { month, completions });
+    return;
+  }
+
   if (request.method === 'POST' && segments.length === 3 && habitId === 'reorder') {
     const input = await readBody(request);
     if (!Array.isArray(input.ids) || input.ids.length !== habits.length || new Set(input.ids).size !== habits.length || input.ids.some((id) => !habits.some((habit) => habit.id === id))) {
@@ -288,6 +305,14 @@ async function handleRequest(request, response, database) {
       title: input.title === undefined ? currentHabit.title : input.title.trim(),
     };
     database.prepare('UPDATE habits SET title = ?, icon = ?, color = ?, completed_today = ? WHERE id = ? AND user_id = ?').run(updatedHabit.title, updatedHabit.icon, updatedHabit.color, updatedHabit.completedToday ? 1 : 0, habitId, currentUser.id);
+    if (input.completedToday !== undefined) {
+      const today = new Date().toISOString().slice(0, 10);
+      if (updatedHabit.completedToday) {
+        database.prepare('INSERT OR IGNORE INTO habit_completions (habit_id, user_id, completed_on) VALUES (?, ?, ?)').run(habitId, currentUser.id, today);
+      } else {
+        database.prepare('DELETE FROM habit_completions WHERE habit_id = ? AND user_id = ? AND completed_on = ?').run(habitId, currentUser.id, today);
+      }
+    }
     sendJson(response, 200, updatedHabit);
     return;
   }

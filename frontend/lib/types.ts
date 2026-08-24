@@ -11,3 +11,13 @@ export interface Habit {
   /** 0 a 1 — usado na barra/anel de progresso semanal */
   weekProgress: number;
 }
+
+export interface HabitCompletion {
+  habitId: string;
+  date: string;
+}
+
+export interface CalendarData {
+  month: string;
+  completions: HabitCompletion[];
+}

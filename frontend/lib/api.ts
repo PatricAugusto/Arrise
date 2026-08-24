@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Habit, HabitColor } from '@/lib/types';
+import { CalendarData, Habit, HabitColor } from '@/lib/types';
 
 const configuredApiUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
 const expoHost = Constants.expoConfig?.hostUri?.split(':')[0];
@@ -56,6 +56,10 @@ export function getHabits() {
     if (stored) return JSON.parse(stored) as Habit[];
     throw error;
   });
+}
+
+export function getCalendar(month: string) {
+  return request<CalendarData>(`/habits/calendar?month=${encodeURIComponent(month)}`);
 }
 
 export interface AuthUser {

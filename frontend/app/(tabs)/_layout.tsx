@@ -40,6 +40,7 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" options={{ title: 'Hoje', tabBarIcon: ({ color, size }) => <Ionicons name="pulse-outline" size={size} color={color} /> }} />
       <Tabs.Screen name="progress" options={{ title: 'Progresso', tabBarIcon: ({ color, size }) => <Ionicons name="analytics-outline" size={size} color={color} /> }} />
+      <Tabs.Screen name="calendar" options={{ title: 'Calendário', tabBarIcon: ({ color, size }) => <Ionicons name="calendar-outline" size={size} color={color} /> }} />
     </Tabs>
   );
 }
