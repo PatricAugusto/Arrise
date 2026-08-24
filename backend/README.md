@@ -28,6 +28,12 @@ O telefone e o computador precisam estar na mesma rede Wi-Fi. Escaneie sempre o 
 
 O backend usa exclusivamente a porta `3000`. Se ela já estiver ocupada, encerre a instância anterior antes de iniciar novamente.
 
+## Operação offline-first
+
+O aplicativo usa o `AsyncStorage` como fonte imediata para hábitos, conclusões e ordenação. A API local em SQLite permanece disponível para persistência e sincronização quando a rede existir, mas uma resposta lenta ou indisponível não bloqueia a experiência do usuário.
+
+Uma sessão já autenticada também é restaurada localmente. Login e cadastro de uma instalação nova ainda exigem conexão para validar a conta. As conclusões diárias são mantidas em `habit_completions`, permitindo alimentar o calendário e o dashboard sem depender da rede.
+
 ## Rotas
 
 - `GET /api/health`

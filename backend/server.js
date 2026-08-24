@@ -111,6 +111,36 @@ function habitFromRow(row) {
   return { id: row.id, title: row.title, icon: row.icon, color: row.color, streak: row.streak, completedToday: Boolean(row.completed_today), weekProgress: row.week_progress };
 }
 
+function localDateKey(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function hydrateHabits(database, userId) {
+  const today = localDateKey();
+  const habits = database.prepare('SELECT * FROM habits WHERE user_id = ? ORDER BY sort_order, created_at, rowid').all(userId);
+  const seedToday = database.prepare('INSERT OR IGNORE INTO habit_completions (habit_id, user_id, completed_on) VALUES (?, ?, ?)');
+  const updateMetrics = database.prepare('UPDATE habits SET streak = ?, week_progress = ?, completed_today = ? WHERE id = ? AND user_id = ?');
+
+  return habits.map((row) => {
+    // Preserve a completion made before the history table existed.
+    if (row.completed_today) seedToday.run(row.id, userId, today);
+    const dates = new Set(database.prepare('SELECT completed_on FROM habit_completions WHERE habit_id = ? AND user_id = ?').all(row.id, userId).map((item) => item.completed_on));
+    const completedToday = dates.has(today);
+    let streak = 0;
+    const cursor = new Date();
+    if (!completedToday) cursor.setDate(cursor.getDate() - 1);
+    while (dates.has(localDateKey(cursor))) {
+      streak += 1;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - 6);
+    const weekProgress = Array.from(dates).filter((date) => date >= localDateKey(weekStart) && date <= today).length / 7;
+    updateMetrics.run(streak, weekProgress, completedToday ? 1 : 0, row.id, userId);
+    return habitFromRow({ ...row, streak, week_progress: weekProgress, completed_today: completedToday ? 1 : 0 });
+  });
+}
+
 function sendJson(response, status, payload) {
   response.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
@@ -230,7 +260,7 @@ async function handleRequest(request, response, database) {
   }
 
   const habitId = segments[2];
-  const habits = database.prepare('SELECT * FROM habits WHERE user_id = ? ORDER BY sort_order, created_at, rowid').all(currentUser.id).map(habitFromRow);
+  const habits = hydrateHabits(database, currentUser.id);
 
   if (request.method === 'GET' && segments.length === 3 && habitId === 'calendar') {
     const month = url.searchParams.get('month') || '';
@@ -304,16 +334,16 @@ async function handleRequest(request, response, database) {
       ...input,
       title: input.title === undefined ? currentHabit.title : input.title.trim(),
     };
-    database.prepare('UPDATE habits SET title = ?, icon = ?, color = ?, completed_today = ? WHERE id = ? AND user_id = ?').run(updatedHabit.title, updatedHabit.icon, updatedHabit.color, updatedHabit.completedToday ? 1 : 0, habitId, currentUser.id);
+    database.prepare('UPDATE habits SET title = ?, icon = ?, color = ? WHERE id = ? AND user_id = ?').run(updatedHabit.title, updatedHabit.icon, updatedHabit.color, habitId, currentUser.id);
     if (input.completedToday !== undefined) {
-      const today = new Date().toISOString().slice(0, 10);
+      const today = localDateKey();
       if (updatedHabit.completedToday) {
         database.prepare('INSERT OR IGNORE INTO habit_completions (habit_id, user_id, completed_on) VALUES (?, ?, ?)').run(habitId, currentUser.id, today);
       } else {
         database.prepare('DELETE FROM habit_completions WHERE habit_id = ? AND user_id = ? AND completed_on = ?').run(habitId, currentUser.id, today);
       }
     }
-    sendJson(response, 200, updatedHabit);
+    sendJson(response, 200, hydrateHabits(database, currentUser.id).find((habit) => habit.id === habitId));
     return;
   }
 
